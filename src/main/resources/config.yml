@@ -1,0 +1,85 @@
+# ======================================================
+#             SpazioDuels Configuration File
+# ======================================================
+
+settings:
+  # Duracion maxima del duelo en segundos (10 minutos por defecto)
+  max_duel_duration_seconds: 600
+  
+  # Segundos de cuenta regresiva antes de iniciar la batalla
+  countdown_seconds: 5
+  
+  # Permitir vuelo durante duelos
+  allow_flight: false
+
+protection:
+  # Comandos permitidos durante el duelo
+  command_whitelist:
+    - "/duel forfeit"
+    - "/duel cancel"
+    - "/g"
+    - "/msg"
+    - "/r"
+
+  # Bloquear la tirada de items en duelos
+  prevent_item_drop: true
+
+  # Bloquear guardar items en cofres/enderchests durante duelos
+  prevent_container_store: true
+
+  # Permitir construccion solo si el kit lo define (ej. UHC)
+  rollback_placed_blocks: true
+
+event:
+  # Tiempo de espera en segundos para que los jugadores se unan al evento antes de iniciar
+  lobby_countdown: 45
+
+  # Formato del mensaje de inicio de evento
+  start_broadcast:
+    - "&e-------------------------------------------"
+    - "              &6&lEVENTO DE DUELOS"
+    - ""
+    - "	 &fUn evento de duelos iniciara en breves."
+    - ""
+    - "	 &7Modo seleccionado: &b%spazioduels_mode%"
+    - "	 &7Kit seleccionado: &b%spazioduels_kitselect%"
+    - ""
+    - "	 &7Recompensa:"
+    - "	 &f- %spazioduels_randomreward%"
+    - "	 &f- %spazioduels_randomreward%"
+    - "	 &f- %spazioduels_randomreward%"
+    - ""
+    - "	 &a&l[ - CLICK PARA INGRESAR AL EVENTO - ]"
+    - "&e-------------------------------------------"
+
+  # Formato del mensaje de finalizacion del evento
+  end_broadcast:
+    - "&e-------------------------------------------"
+    - "              &6&lEVENTO DE DUELOS"
+    - ""
+    - "	 &fEl duelo &b%spazioduels_event% &fha finalizado."
+    - ""
+    - "	 &7Los ganadores del evento son:"
+    - "	 &a%spazioduels_winer%&f/&a%spazioduels_winer_team%"
+    - ""
+    - "	 &7Recompensas recibidas:"
+    - ""
+    - "	 &f- %spazioduels_randomreward%"
+    - "	 &f- %spazioduels_randomreward%"
+    - "	 &f- %spazioduels_randomreward%"
+    - ""
+    - "	 &e&l[ - CLICK PARA VER LA INFORMACION - ]"
+    - "&e-------------------------------------------"
+
+rewards:
+  default_pool:
+    - name: "&a10,000 Monedas"
+      command: "eco give %player% 10000"
+    - name: "&bLlave de Crate Mítica"
+      command: "crate give %player% mythic 1"
+    - name: "&cEspada de Duelos Especial"
+      command: "give %player% diamond_sword 1"
+    - name: "&e500 Puntos de Duelos"
+      command: "eco give %player% 500"
+    - name: "&61x Manzana de Oro Encantada"
+      command: "give %player% enchanted_golden_apple 1"

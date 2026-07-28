@@ -1,0 +1,30 @@
+name: SpazioDuels
+version: '${project.version}'
+main: network.minespazio.spazioduels.SpazioDuelsPlugin
+api-version: '1.21'
+description: Plugin modular de duelos para survival_core
+author: SpazioTeam
+depend:
+  - survival_core
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  duel:
+    description: Comando principal de duelos
+    aliases: [duelo, duels]
+    usage: /duel <jugador|accept|deny|forfeit|toggle|kit>
+  duelevent:
+    description: Gestiona eventos automaticos de duelos
+    aliases: [eventoduel, devent]
+    permission: spazioduels.admin.event
+    usage: /duelevent <start|cancel|autowin|join|summary>
+  spazioduels:
+    description: Comando de administracion y setup de SpazioDuels
+    aliases: [sd, sduels]
+    permission: spazioduels.admin
+    usage: /spazioduels <setup|kit|reload>
+  party:
+    description: Sistema de party/equipo para duelos
+    aliases: [p, equipo, team]
+    usage: /party <create|invite|accept|leave|disband|kick|info>

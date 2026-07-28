@@ -1,0 +1,13 @@
+# SpazioDuels Event Rewards Pool Configuration
+rewards:
+  tier_1:
+    - name: "&a10,000 Monedas Spazio"
+      command: "eco give %player% 10000"
+    - name: "&bLlave Mítica"
+      command: "crate give %player% mythic 1"
+    - name: "&cEspada de Leyenda"
+      command: "give %player% netherite_sword 1"
+    - name: "&e500 Puntos de Experiencia"
+      command: "xp give %player% 500"
+    - name: "&62x Manzanas de Notched"
+      command: "give %player% enchanted_golden_apple 2"
