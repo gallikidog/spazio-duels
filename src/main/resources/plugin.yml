@@ -2,11 +2,12 @@ name: SpazioDuels
 version: '${project.version}'
 main: network.minespazio.spazioduels.SpazioDuelsPlugin
 api-version: '1.21'
-description: Plugin modular de duelos para survival_core
+description: Plugin modular de duelos para survival_core con integracion a PlayerKits2
 author: SpazioTeam
 depend:
   - survival_core
 softdepend:
+  - PlayerKits2
   - PlaceholderAPI
 
 commands:
@@ -23,7 +24,7 @@ commands:
     description: Comando de administracion y setup de SpazioDuels
     aliases: [sd, sduels]
     permission: spazioduels.admin
-    usage: /spazioduels <setup|kit|reload>
+    usage: /spazioduels <setup|adminkits|kit|reload>
   party:
     description: Sistema de party/equipo para duelos
     aliases: [p, equipo, team]

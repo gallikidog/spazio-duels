@@ -2,6 +2,7 @@ package network.minespazio.spazioduels.command;
 
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
 import network.minespazio.spazioduels.arena.Arena;
+import network.minespazio.spazioduels.gui.AdminKitsGUI;
 import network.minespazio.spazioduels.gui.ArenaAdminGUI;
 import network.minespazio.spazioduels.kit.Kit;
 import network.minespazio.spazioduels.util.TextUtil;
@@ -37,7 +38,15 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
 
         String sub = args[0].toLowerCase();
 
-        if (sub.equalsIgnoreCase("setup")) {
+        if (sub.equalsIgnoreCase("adminkits")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Requiere ser un jugador para abrir la GUI de gestión de kits.");
+                return true;
+            }
+            new AdminKitsGUI(plugin).open(player);
+            return true;
+
+        } else if (sub.equalsIgnoreCase("setup")) {
             if (!(sender instanceof Player player)) {
                 sender.sendMessage("Comandos de setup requieren ser ejecutados por un jugador.");
                 return true;
@@ -117,7 +126,7 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
 
         } else if (sub.equalsIgnoreCase("kit")) {
             if (args.length < 2) {
-                sender.sendMessage(TextUtil.colorize("&cUso: /sd kit <create|delete|list|togglebuild> <nombre>"));
+                sender.sendMessage(TextUtil.colorize("&cUso: /sd kit <create|delete|list|togglebuild|toggleduel> <nombre>"));
                 return true;
             }
 
@@ -165,10 +174,21 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
                 }
                 return true;
 
+            } else if (action.equalsIgnoreCase("toggleduel")) {
+                if (args.length < 3) {
+                    sender.sendMessage(TextUtil.colorize("&cUso: /sd kit toggleduel <nombreKit>"));
+                    return true;
+                }
+                boolean newState = plugin.getKitManager().toggleKitEnabledForDuels(args[2]);
+                sender.sendMessage(TextUtil.colorize("&aEl kit &b" + args[2] + " &aahora está: " + (newState ? "&aHABILITADO" : "&cDESHABILITADO") + " &apara duelos."));
+                return true;
+
             } else if (action.equalsIgnoreCase("list")) {
                 sender.sendMessage(TextUtil.colorize("&eKits cargados:"));
                 for (Kit k : plugin.getKitManager().getKits()) {
-                    sender.sendMessage(TextUtil.colorize("&7- &b" + k.getName() + " &7(Construcción: " + (k.isAllowBuilding() ? "&aSí" : "&cNo") + "&7)"));
+                    String status = k.isEnabledForDuels() ? "&a[Habilitado]" : "&c[Deshabilitado]";
+                    String origin = k.isFromPlayerKits() ? "&b(PlayerKits2)" : "&e(Nativo)";
+                    sender.sendMessage(TextUtil.colorize("&7- &b" + k.getName() + " " + status + " " + origin));
                 }
                 return true;
             }
@@ -188,12 +208,13 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(TextUtil.colorize("&e-------------------------------------------"));
         sender.sendMessage(TextUtil.colorize("&6&lSpazioDuels Admin Commands"));
+        sender.sendMessage(TextUtil.colorize("&7/sd adminkits &f(Panel GUI de activación de kits)"));
         sender.sendMessage(TextUtil.colorize("&7/sd setup setspawn1 <arena>"));
         sender.sendMessage(TextUtil.colorize("&7/sd setup setspawn2 <arena>"));
         sender.sendMessage(TextUtil.colorize("&7/sd setup setspectator <arena>"));
         sender.sendMessage(TextUtil.colorize("&7/sd setup setlobby"));
         sender.sendMessage(TextUtil.colorize("&7/sd kit create <nombre>"));
-        sender.sendMessage(TextUtil.colorize("&7/sd kit togglebuild <nombre>"));
+        sender.sendMessage(TextUtil.colorize("&7/sd kit toggleduel <nombre>"));
         sender.sendMessage(TextUtil.colorize("&7/sd reload"));
         sender.sendMessage(TextUtil.colorize("&e-------------------------------------------"));
     }
@@ -201,11 +222,11 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return Arrays.asList("setup", "kit", "reload");
+            return Arrays.asList("adminkits", "setup", "kit", "reload");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("setup")) {
             return Arrays.asList("create", "delete", "setspawn1", "setspawn2", "setspectator", "setlobby");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("kit")) {
-            return Arrays.asList("create", "delete", "togglebuild", "list");
+            return Arrays.asList("create", "delete", "togglebuild", "toggleduel", "list");
         }
         return new ArrayList<>();
     }

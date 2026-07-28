@@ -17,6 +17,8 @@ public class Kit {
     private ItemStack offHand;
     private List<PotionEffect> potionEffects;
     private boolean allowBuilding;
+    private boolean enabledForDuels;
+    private boolean fromPlayerKits;
 
     public Kit(String name) {
         this.name = name;
@@ -26,9 +28,11 @@ public class Kit {
         this.offHand = null;
         this.potionEffects = new ArrayList<>();
         this.allowBuilding = false;
+        this.enabledForDuels = true;
+        this.fromPlayerKits = false;
     }
 
-    public Kit(String name, ItemStack icon, ItemStack[] contents, ItemStack[] armor, ItemStack offHand, Collection<PotionEffect> potionEffects, boolean allowBuilding) {
+    public Kit(String name, ItemStack icon, ItemStack[] contents, ItemStack[] armor, ItemStack offHand, Collection<PotionEffect> potionEffects, boolean allowBuilding, boolean enabledForDuels, boolean fromPlayerKits) {
         this.name = name;
         this.icon = icon != null ? icon.clone() : new ItemStack(Material.DIAMOND_SWORD);
         this.contents = contents != null ? contents : new ItemStack[36];
@@ -36,6 +40,8 @@ public class Kit {
         this.offHand = offHand;
         this.potionEffects = potionEffects != null ? new ArrayList<>(potionEffects) : new ArrayList<>();
         this.allowBuilding = allowBuilding;
+        this.enabledForDuels = enabledForDuels;
+        this.fromPlayerKits = fromPlayerKits;
     }
 
     public String getName() {
@@ -88,5 +94,21 @@ public class Kit {
 
     public void setAllowBuilding(boolean allowBuilding) {
         this.allowBuilding = allowBuilding;
+    }
+
+    public boolean isEnabledForDuels() {
+        return enabledForDuels;
+    }
+
+    public void setEnabledForDuels(boolean enabledForDuels) {
+        this.enabledForDuels = enabledForDuels;
+    }
+
+    public boolean isFromPlayerKits() {
+        return fromPlayerKits;
+    }
+
+    public void setFromPlayerKits(boolean fromPlayerKits) {
+        this.fromPlayerKits = fromPlayerKits;
     }
 }

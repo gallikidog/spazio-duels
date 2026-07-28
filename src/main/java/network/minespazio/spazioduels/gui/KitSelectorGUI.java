@@ -13,7 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Collection;
+import java.util.List;
 
 public class KitSelectorGUI {
 
@@ -31,7 +31,7 @@ public class KitSelectorGUI {
     }
 
     public void open() {
-        Collection<Kit> kits = plugin.getKitManager().getKits();
+        List<Kit> kits = plugin.getKitManager().getEnabledKitsForDuels();
         int size = Math.max(27, ((kits.size() / 9) + 1) * 9);
         Inventory inv = Bukkit.createInventory(null, Math.min(54, size), TITLE);
 
@@ -58,7 +58,7 @@ public class KitSelectorGUI {
         String kitName = item.getItemMeta().getPersistentDataContainer().get(kitKey, PersistentDataType.STRING);
         if (kitName != null) {
             Kit kit = plugin.getKitManager().getKit(kitName);
-            if (kit != null) {
+            if (kit != null && kit.isEnabledForDuels()) {
                 clicker.closeInventory();
                 plugin.getDuelManager().sendDuelRequestWithKit(sender, target, kit, DuelMode.SOLO_1V1);
             }
