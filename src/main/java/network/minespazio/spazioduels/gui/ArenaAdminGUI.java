@@ -8,13 +8,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Collection;
 
-public class ArenaAdminGUI {
+public class ArenaAdminGUI implements InventoryHolder {
 
     public static final String TITLE = TextUtil.colorize("&8Panel de Arenas - Setup");
     private final SpazioDuelsPlugin plugin;
+    private Inventory inventory;
 
     public ArenaAdminGUI(SpazioDuelsPlugin plugin) {
         this.plugin = plugin;
@@ -22,7 +24,7 @@ public class ArenaAdminGUI {
 
     public void open(Player player) {
         Collection<Arena> arenas = plugin.getArenaManager().getArenas();
-        Inventory inv = Bukkit.createInventory(null, 54, TITLE);
+        this.inventory = Bukkit.createInventory(this, 54, TITLE);
 
         int slot = 0;
         for (Arena arena : arenas) {
@@ -40,9 +42,14 @@ public class ArenaAdminGUI {
                             "&7/sd setup setspawn2 " + arena.getName(),
                             "&7/sd setup setspectator " + arena.getName()
                     );
-            inv.setItem(slot++, builder.build());
+            this.inventory.setItem(slot++, builder.build());
         }
 
-        player.openInventory(inv);
+        player.openInventory(this.inventory);
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inventory;
     }
 }

@@ -9,15 +9,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventSummaryGUI {
+public class EventSummaryGUI implements InventoryHolder {
 
     public static final String TITLE = TextUtil.colorize("&8Resumen del Evento de Duelos");
     private final SpazioDuelsPlugin plugin;
     private final EventSummary summary;
+    private Inventory inventory;
 
     public EventSummaryGUI(SpazioDuelsPlugin plugin, EventSummary summary) {
         this.plugin = plugin;
@@ -25,12 +27,12 @@ public class EventSummaryGUI {
     }
 
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
+        this.inventory = Bukkit.createInventory(this, 27, TITLE);
 
         // Fill background with black glass panes
         ItemBuilder glass = new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name(" ");
         for (int i = 0; i < 27; i++) {
-            inv.setItem(i, glass.build());
+            this.inventory.setItem(i, glass.build());
         }
 
         // Slot 11: Trophy / Winner Info
@@ -43,7 +45,7 @@ public class EventSummaryGUI {
                         "&7Modo jugado: &b" + summary.getModeName(),
                         "&7Kit utilizado: &b" + summary.getKitName()
                 );
-        inv.setItem(11, trophy.build());
+        this.inventory.setItem(11, trophy.build());
 
         // Slot 13: Event Stats
         ItemBuilder stats = new ItemBuilder(Material.CLOCK)
@@ -54,7 +56,7 @@ public class EventSummaryGUI {
                         "&7Encuentros disputados: &b" + summary.getTotalMatches(),
                         "&7Eliminaciones totales: &c" + summary.getTotalKills()
                 );
-        inv.setItem(13, stats.build());
+        this.inventory.setItem(13, stats.build());
 
         // Slot 15: Rewards Chest
         List<String> rewardLore = new ArrayList<>();
@@ -65,8 +67,13 @@ public class EventSummaryGUI {
         ItemBuilder rewardsItem = new ItemBuilder(Material.CHEST)
                 .name("&a&lRECOMPENSAS ENTREGADAS")
                 .lore(rewardLore);
-        inv.setItem(15, rewardsItem.build());
+        this.inventory.setItem(15, rewardsItem.build());
 
-        player.openInventory(inv);
+        player.openInventory(this.inventory);
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inventory;
     }
 }

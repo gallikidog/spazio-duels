@@ -1,10 +1,13 @@
-# ⚔️ SpazioDuels (v1.0.1)
+# ⚔️ SpazioDuels (v1.0.2)
 
 **SpazioDuels** es un plugin de duelos altamente modular, extremadamente sólido y optimizado para entornos de producción de Minecraft (**Paper 1.21.10** / **Java 21**). Diseñado como addon nativo para el core `survival_core` e integrado con **PlayerKits2**.
 
 ---
 
 ## 🌟 Características Principales
+
+### 🐛 Correcciones y Mejoras (v1.0.2)
+- **Corrección de N性的 en Selección de Kits**: Implementación de `InventoryHolder` en todas las GUIs para almacenar de forma persistente y segura el jugador desafiante (`sender`) y el objetivo (`target`), solucionando el error al enviar retos de duelo.
 
 ### 📦 Integración Automática con PlayerKits (PlayerKits2)
 - **Importación Directa**: Detecta automáticamente el plugin **PlayerKits2** e importa todos los kits definidos en el servidor sin necesidad de re-crearlos.
@@ -53,7 +56,7 @@
 | `/duelevent start <modo> <kit>` | `/eventoduel`, `/devent` | Inicia un evento automático de duelos. | `spazioduels.admin.event` |
 | `/duelevent join` | - | Se une al evento de duelos activo. | `Ninguno` |
 | `/duelevent summary [uuid]` | - | Abre la GUI con el resumen del evento. | `Ninguno` |
-| `/spazioduels adminkits` | `/sd adminkits` | **NUEVO (v1.0.1)**: Abre la GUI para habilitar/deshabilitar kits para duelos. | `spazioduels.admin` |
+| `/spazioduels adminkits` | `/sd adminkits` | Abre la GUI para habilitar/deshabilitar kits para duelos. | `spazioduels.admin` |
 | `/spazioduels setup` | `/sd setup` | Abre la GUI de gestión de arenas. | `spazioduels.admin` |
 | `/spazioduels setup create <nombre>` | - | Crea una nueva arena. | `spazioduels.admin` |
 | `/spazioduels setup setspawn1 <arena>` | - | Establece el Spawn 1 de la arena. | `spazioduels.admin` |

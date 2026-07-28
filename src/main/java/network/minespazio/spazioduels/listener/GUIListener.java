@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.InventoryHolder;
 
 public class GUIListener implements Listener {
 
@@ -21,17 +22,15 @@ public class GUIListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        String title = event.getView().getTitle();
+        InventoryHolder holder = event.getInventory().getHolder();
 
-        if (title.equalsIgnoreCase(KitSelectorGUI.TITLE)) {
+        if (holder instanceof KitSelectorGUI gui) {
             event.setCancelled(true);
-            KitSelectorGUI gui = new KitSelectorGUI(plugin, player, null);
             gui.handleCLick(player, event.getCurrentItem());
-        } else if (title.equalsIgnoreCase(AdminKitsGUI.TITLE)) {
+        } else if (holder instanceof AdminKitsGUI gui) {
             event.setCancelled(true);
-            AdminKitsGUI gui = new AdminKitsGUI(plugin);
             gui.handleClick(player, event.getCurrentItem());
-        } else if (title.equalsIgnoreCase(EventSummaryGUI.TITLE) || title.equalsIgnoreCase(ArenaAdminGUI.TITLE)) {
+        } else if (holder instanceof EventSummaryGUI || holder instanceof ArenaAdminGUI) {
             event.setCancelled(true);
         }
     }

@@ -9,16 +9,18 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Collection;
 
-public class AdminKitsGUI {
+public class AdminKitsGUI implements InventoryHolder {
 
     public static final String TITLE = TextUtil.colorize("&8Gestión de Kits para Duelos");
     private final SpazioDuelsPlugin plugin;
     private final NamespacedKey kitKey;
+    private Inventory inventory;
 
     public AdminKitsGUI(SpazioDuelsPlugin plugin) {
         this.plugin = plugin;
@@ -28,7 +30,7 @@ public class AdminKitsGUI {
     public void open(Player player) {
         Collection<Kit> kits = plugin.getKitManager().getKits();
         int size = Math.max(27, ((kits.size() / 9) + 1) * 9);
-        Inventory inv = Bukkit.createInventory(null, Math.min(54, size), TITLE);
+        this.inventory = Bukkit.createInventory(this, Math.min(54, size), TITLE);
 
         int slot = 0;
         for (Kit kit : kits) {
@@ -47,10 +49,10 @@ public class AdminKitsGUI {
                             actionLore
                     )
                     .pdcString(kitKey, kit.getName());
-            inv.setItem(slot++, builder.build());
+            this.inventory.setItem(slot++, builder.build());
         }
 
-        player.openInventory(inv);
+        player.openInventory(this.inventory);
     }
 
     public void handleClick(Player player, ItemStack item) {
@@ -61,5 +63,10 @@ public class AdminKitsGUI {
             player.sendMessage(TextUtil.colorize("&aEl kit &b" + kitName + " &aahora está: " + (newState ? "&aHABILITADO" : "&cDESHABILITADO") + " &apara duelos."));
             open(player); // Refresh GUI
         }
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inventory;
     }
 }
