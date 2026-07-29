@@ -1,46 +1,50 @@
-# ⚔️ SpazioDuels (v1.0.2)
+# ⚔️ SpazioDuels (v1.1.0)
 
-**SpazioDuels** es un plugin de duelos altamente modular, extremadamente sólido y optimizado para entornos de producción de Minecraft (**Paper 1.21.10** / **Java 21**). Diseñado como addon nativo para el core `survival_core` e integrado con **PlayerKits2**.
+**SpazioDuels** es un plugin de duelos y **KOTH (King Of The Hill)** altamente modular, extremadamente sólido y optimizado para entornos de producción de Minecraft (**Paper 1.21.10** / **Java 21**). Diseñado como addon nativo para el core `survival_core` e integrado con **PlayerKits2** y **WorldEdit / FAWE**.
 
 ---
 
-## 🌟 Características Principales
+## 🌟 Nuevas Características (v1.1.0): Sistema Completo KOTH
 
-### 🐛 Correcciones y Mejoras (v1.0.2)
-- **Corrección de N性的 en Selección de Kits**: Implementación de `InventoryHolder` en todas las GUIs para almacenar de forma persistente y segura el jugador desafiante (`sender`) y el objetivo (`target`), solucionando el error al enviar retos de duelo.
-
-### 📦 Integración Automática con PlayerKits (PlayerKits2)
-- **Importación Directa**: Detecta automáticamente el plugin **PlayerKits2** e importa todos los kits definidos en el servidor sin necesidad de re-crearlos.
-- **Gestión de Kits para Duelos (`/sd adminkits`)**:
-  - Abre un panel administrativo interactivo en GUI para habilitar o deshabilitar qué kits (nativos o de PlayerKits2) estarán disponibles para el sistema de duelos.
-  - En la selección de kit para los jugadores (`/duel`), únicamente se mostrarán los kits marcados como **HABILITADOS**.
-
-### ⚔️ Sistema de Duelos Flexible
-- **Sistema de desafío rápido**: `/duel <jugador>` abre la GUI (`KitSelectorGUI`) filtrando solo los kits habilitados.
-- **Invitaciones Interactivas**: Mensajes con botones interactivos `[ACEPTAR DUELO]` y `[RECHAZAR DUELO]` en el chat.
-- **Múltiples Modos de Juego**:
-  - **1v1** (Duelo individual).
-  - **2v2, 3v3, 4v4** (Duelos por equipos/party).
-  - **Handicap** (2v1, 3v2, 4v3 con reglas especiales para el equipo mayoritario).
-- **Límite de tiempo**: Duración máxima de **10 minutos** (configurable) con Actionbar.
-
-### 🔒 Sistema Anti-Dupe de Grado de Producción
-- **Etiquetado PDC**: Ítems etiquetados con `spazioduels:kit_item`.
-- **Protección de Contenedores y Dropeos**: Cancela dropeos y bloquea guardar en cofres, shulker boxes, ender chests y marcos.
-- **Restauración Asegurada de Inventario (Disk-Backed)**: Respaldo guardado en `plugins/SpazioDuels/data/inventories/<uuid>.yml` con restauración automática en cualquier circunstancia.
-
-### 🛡️ Setup In-Game & Protección
-- **Gestión de Arenas**: Configuración in-game de spawns (`spawn1`, `spawn2`, `spectator`, `lobby`) y panel GUI (`/sd setup`).
-- **Protección de Comandos y Rollback**: Bloqueo de comandos no autorizados durante duelos y rollback de bloques colocados en la arena (ej. UHC).
-
-### 🏆 Eventos Automáticos & Resúmenes Interactivos
-- **Eventos Automáticos**: Torneos automáticos (`/duelevent start <modo> <kit>`) con botones de ingreso y finalización interactivos.
-- **Resumen Final Interactivo**: Clic en el mensaje de finalización abre `EventSummaryGUI` mostrando ganadores, duración, rondas y recompensas.
+### 🏰 Rey de la Colina (KOTH)
+- **Creación & Configuración de KOTHs**:
+  - `/koth create <nombre>`: Crea un nuevo KOTH.
+  - `/koth setcapdelay <koth> <segundos>`: Configura el tiempo necesario para la captura (en segundos).
+  - `/koth setloot <koth>`: Abre una interfaz GUI depositario para configurar los ítems de botín del KOTH con botón de **GUARDAR LOOT**.
+- **Integración con WorldEdit / FAWE**:
+  - `/koth setzone <koth>`: Configura el área perimetral a partir de la selección de WorldEdit (`//wand`). Al entrar a esta zona, el jugador ve un título en pantalla durante 2 segundos (`"Ingresaste a la zona del Koth <Koth>"`).
+  - `/koth setcapzone <koth>`: Configura la zona interna de captura. Al permanecer en ella se descuenta el tiempo de control.
+- **Scoreboard & Placeholders en Tiempo Real**:
+  - Integrado dinámicamente con la Scoreboard de `survival_core` mediante PlaceholderAPI:
+    - `%spazioduels_koth_active%`: Estado activo del KOTH (`true`/`false`).
+    - `%spazioduels_koth_name%`: Nombre del KOTH en ejecución.
+    - `%spazioduels_koth_capper%`: Nombre del jugador que está capturando en vivo.
+    - `%spazioduels_koth_time%`: Tiempo restante formateado (`MM:SS`).
+- **Anuncios & Pantalla de Victoria**:
+  - Al capturar el KOTH, el ganador ve un título de felicitaciones en su pantalla por 2 segundos.
+  - Se transmite un mensaje de felicitaciones y victoria en el chat global del servidor.
+  - El botín configurado se entrega automáticamente al inventario del ganador.
+- **Hosteo Automático Programado**:
+  - Configurable en `config.yml` (`koth_autostart.enabled: true`, `interval_minutes: 120`) para automatizar eventos KOTH aleatorios a lo largo del día.
 
 ---
 
 ## 📜 Lista Completa de Comandos
 
+### 🏰 Comandos de KOTH (`/koth`)
+| Comando | Descripción | Permiso |
+| :--- | :--- | :--- |
+| `/koth create <nombre>` | Crea un nuevo KOTH. | `spazioduels.admin.koth` |
+| `/koth setcapdelay <koth> <segundos>` | Establece el tiempo de captura (en segundos). | `spazioduels.admin.koth` |
+| `/koth setloot <koth>` | Abre la GUI para depositar y guardar el botín del KOTH. | `spazioduels.admin.koth` |
+| `/koth setzone <koth>` | Establece la zona perimetral del KOTH con la selección de WorldEdit. | `spazioduels.admin.koth` |
+| `/koth setcapzone <koth>` | Establece la zona de captura del KOTH con la selección de WorldEdit. | `spazioduels.admin.koth` |
+| `/koth start <koth>` | Inicia manualmente un KOTH. | `spazioduels.admin.koth` |
+| `/koth stop` | Detiene el KOTH activo actual. | `spazioduels.admin.koth` |
+| `/koth list` | Muestra la lista de KOTHs y sus estadísticas. | `spazioduels.admin.koth` |
+| `/koth info <koth>` | Muestra información detallada de un KOTH. | `spazioduels.admin.koth` |
+
+### ⚔️ Comandos de Duelos y Administración (`/duel`, `/sd`, `/party`, `/duelevent`)
 | Comando | Alias | Descripción | Permiso |
 | :--- | :--- | :--- | :--- |
 | `/duel <jugador>` | `/duelo`, `/duels` | Envía una solicitud de duelo abriendo la GUI de kits habilitados. | `Ninguno` |
@@ -58,16 +62,11 @@
 | `/duelevent summary [uuid]` | - | Abre la GUI con el resumen del evento. | `Ninguno` |
 | `/spazioduels adminkits` | `/sd adminkits` | Abre la GUI para habilitar/deshabilitar kits para duelos. | `spazioduels.admin` |
 | `/spazioduels setup` | `/sd setup` | Abre la GUI de gestión de arenas. | `spazioduels.admin` |
-| `/spazioduels setup create <nombre>` | - | Crea una nueva arena. | `spazioduels.admin` |
 | `/spazioduels setup setspawn1 <arena>` | - | Establece el Spawn 1 de la arena. | `spazioduels.admin` |
 | `/spazioduels setup setspawn2 <arena>` | - | Establece el Spawn 2 de la arena. | `spazioduels.admin` |
 | `/spazioduels setup setspectator <arena>`| - | Establece la ubicación de espectador de la arena. | `spazioduels.admin` |
 | `/spazioduels setup setlobby` | - | Establece el spawn global del lobby de duelos. | `spazioduels.admin` |
-| `/spazioduels kit create <nombre>` | - | Crea un kit nativo con tu inventario actual. | `spazioduels.admin` |
-| `/spazioduels kit toggleduel <nombre>`| - | Alterna la activación del kit para el sistema de duelos. | `spazioduels.admin` |
-| `/spazioduels kit togglebuild <nombre>`| - | Alterna si el kit permite colocar/romper bloques. | `spazioduels.admin` |
-| `/spazioduels kit list` | - | Lista todos los kits cargados (nativos y de PlayerKits2). | `spazioduels.admin` |
-| `/spazioduels reload` | - | Recarga la configuración, kits y arenas. | `spazioduels.admin` |
+| `/spazioduels reload` | - | Recarga la configuración, kits, KOTHs y arenas. | `spazioduels.admin` |
 
 ---
 
@@ -75,9 +74,29 @@
 
 | Permiso | Descripción | Por defecto |
 | :--- | :--- | :--- |
-| `spazioduels.admin` | Acceso a comandos de administración, setup y panel `/sd adminkits`. | OP |
+| `spazioduels.admin.koth` | Acceso a todos los comandos de administración de KOTHs (`/koth`). | OP |
+| `spazioduels.admin` | Acceso a comandos de administración, setup de duelos y panel `/sd adminkits`. | OP |
 | `spazioduels.admin.event` | Acceso para iniciar eventos automáticos de duelos. | OP |
 | `spazioduels.admin.bypass` | Permite ejecutar cualquier comando durante un duelo. | OP |
+
+---
+
+## ⚙️ Guía de Creación de un KOTH Paso a Paso
+
+1. **Crear el KOTH**:
+   - `/koth create ArenaKoth`
+2. **Establecer el tiempo de captura**:
+   - `/koth setcapdelay ArenaKoth 300` (5 minutos)
+3. **Seleccionar las zonas con WorldEdit**:
+   - Equípate el hacha (`//wand`) y selecciona dos esquinas para el área perimetral.
+   - Ejecuta: `/koth setzone ArenaKoth`
+   - Selecciona las esquinas para la zona interna de captura (donde deben pararse los jugadores para descontar tiempo).
+   - Ejecuta: `/koth setcapzone ArenaKoth`
+4. **Configurar el Botín**:
+   - Ejecuta: `/koth setloot ArenaKoth`
+   - Deposita todos los objetos deseados en la interfaz GUI y haz clic abajo en **`[ GUARDAR LOOT ]`**.
+5. **Iniciar el KOTH**:
+   - `/koth start ArenaKoth`
 
 ---
 
@@ -87,6 +106,7 @@
 - **Java**: `21` o superior
 - **Dependencias**:
   - `survival_core` (Core principal)
+  - `WorldEdit` / `FastAsyncWorldEdit` (Para selección de zonas KOTH)
   - `PlayerKits2` (Opcional - Importación de kits)
   - `PlaceholderAPI` (Opcional)
 

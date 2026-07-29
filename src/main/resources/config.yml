@@ -71,6 +71,32 @@ event:
     - "	 &e&l[ - CLICK PARA VER LA INFORMACION - ]"
     - "&e-------------------------------------------"
 
+# Configuración del Sistema KOTH (King Of The Hill)
+koth:
+  # Titulo de entrada a la zona del KOTH
+  zone_entry_title: "&6&lKOTH"
+  zone_entry_subtitle: "&fIngresaste a la zona del Koth &b%koth%"
+
+  # Titulo en pantalla para el ganador al capturar
+  winner_title: "&a&l¡FELICITACIONES!"
+  winner_subtitle: "&fCapturaste el Koth &b%koth%"
+
+  # Mensaje global en el chat al capturar el KOTH
+  broadcast_win:
+    - "&e-------------------------------------------"
+    - "              &6&lKOTH CAPTURADO"
+    - ""
+    - "	 &fEl jugador &b%player% &fha capturado el KOTH &e%koth%&f!"
+    - "	 &7¡Ha recibido el botín de victoria!"
+    - ""
+    - "&e-------------------------------------------"
+
+# Hosteo automatico de KOTHs durante el dia
+koth_autostart:
+  enabled: true
+  interval_minutes: 120
+  koths_pool: []
+
 rewards:
   default_pool:
     - name: "&a10,000 Monedas"

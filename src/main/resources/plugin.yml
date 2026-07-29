@@ -2,12 +2,14 @@ name: SpazioDuels
 version: '${project.version}'
 main: network.minespazio.spazioduels.SpazioDuelsPlugin
 api-version: '1.21'
-description: Plugin modular de duelos para survival_core con integracion a PlayerKits2
+description: Plugin modular de duelos y KOTH para survival_core
 author: SpazioTeam
 depend:
   - survival_core
 softdepend:
   - PlayerKits2
+  - WorldEdit
+  - FastAsyncWorldEdit
   - PlaceholderAPI
 
 commands:
@@ -25,6 +27,11 @@ commands:
     aliases: [sd, sduels]
     permission: spazioduels.admin
     usage: /spazioduels <setup|adminkits|kit|reload>
+  koth:
+    description: Comando de administracion y control de KOTH (King Of The Hill)
+    aliases: [kingofthehill]
+    permission: spazioduels.admin.koth
+    usage: /koth <create|setcapdelay|setloot|setzone|setcapzone|start|stop|list|info>
   party:
     description: Sistema de party/equipo para duelos
     aliases: [p, equipo, team]

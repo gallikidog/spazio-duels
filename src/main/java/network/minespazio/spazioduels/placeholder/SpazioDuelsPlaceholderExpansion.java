@@ -3,6 +3,7 @@ package network.minespazio.spazioduels.placeholder;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
 import network.minespazio.spazioduels.duel.DuelMatch;
+import network.minespazio.spazioduels.koth.KothMatch;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +38,32 @@ public class SpazioDuelsPlaceholderExpansion extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
+        if (params.equalsIgnoreCase("koth_active")) {
+            KothMatch activeKoth = plugin.getKothManager().getActiveMatch();
+            return activeKoth != null && activeKoth.isActive() ? "true" : "false";
+        }
+
+        if (params.equalsIgnoreCase("koth_name")) {
+            KothMatch activeKoth = plugin.getKothManager().getActiveMatch();
+            return activeKoth != null && activeKoth.isActive() ? activeKoth.getKoth().getName() : "Ninguno";
+        }
+
+        if (params.equalsIgnoreCase("koth_capper")) {
+            KothMatch activeKoth = plugin.getKothManager().getActiveMatch();
+            if (activeKoth != null && activeKoth.isActive() && activeKoth.getCurrentCapper() != null) {
+                return activeKoth.getCurrentCapper().getName();
+            }
+            return "Nadie";
+        }
+
+        if (params.equalsIgnoreCase("koth_time")) {
+            KothMatch activeKoth = plugin.getKothManager().getActiveMatch();
+            if (activeKoth != null && activeKoth.isActive()) {
+                return activeKoth.formatTime(activeKoth.getRemainingSeconds());
+            }
+            return "00:00";
+        }
+
         if (player == null) return "";
 
         DuelMatch match = plugin.getDuelManager().getMatch(player);

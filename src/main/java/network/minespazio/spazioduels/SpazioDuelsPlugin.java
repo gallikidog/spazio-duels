@@ -4,14 +4,12 @@ import network.minespazio.spazioduels.addon.SurvivalCoreAddonHook;
 import network.minespazio.spazioduels.antidupe.AntiDupeManager;
 import network.minespazio.spazioduels.antidupe.InventoryBackupManager;
 import network.minespazio.spazioduels.arena.ArenaManager;
-import network.minespazio.spazioduels.command.DuelCommand;
-import network.minespazio.spazioduels.command.DuelEventCommand;
-import network.minespazio.spazioduels.command.PartyCommand;
-import network.minespazio.spazioduels.command.SpazioDuelsAdminCommand;
+import network.minespazio.spazioduels.command.*;
 import network.minespazio.spazioduels.duel.DuelManager;
 import network.minespazio.spazioduels.duel.DuelMatch;
 import network.minespazio.spazioduels.event.DuelEventManager;
 import network.minespazio.spazioduels.kit.KitManager;
+import network.minespazio.spazioduels.koth.KothManager;
 import network.minespazio.spazioduels.listener.AntiDupeListener;
 import network.minespazio.spazioduels.listener.GUIListener;
 import network.minespazio.spazioduels.listener.MatchListener;
@@ -33,6 +31,7 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
     private PartyManager partyManager;
     private DuelManager duelManager;
     private DuelEventManager duelEventManager;
+    private KothManager kothManager;
 
     @Override
     public void onEnable() {
@@ -46,6 +45,7 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
         this.partyManager = new PartyManager(this);
         this.duelManager = new DuelManager(this);
         this.duelEventManager = new DuelEventManager(this);
+        this.kothManager = new KothManager(this);
 
         // Register survival_core addon hook
         this.addonHook = new SurvivalCoreAddonHook(this);
@@ -73,6 +73,11 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
             getCommand("spazioduels").setExecutor(cmd);
             getCommand("spazioduels").setTabCompleter(cmd);
         }
+        if (getCommand("koth") != null) {
+            KothCommand cmd = new KothCommand(this);
+            getCommand("koth").setExecutor(cmd);
+            getCommand("koth").setTabCompleter(cmd);
+        }
         if (getCommand("party") != null) {
             PartyCommand cmd = new PartyCommand(this);
             getCommand("party").setExecutor(cmd);
@@ -95,6 +100,10 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
             for (DuelMatch match : new HashSet<>(duelManager.getActiveMatches())) {
                 match.cleanupAndRestore();
             }
+        }
+
+        if (kothManager != null) {
+            kothManager.stopActiveMatch();
         }
 
         // Unregister survival_core addon hook
@@ -135,5 +144,9 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
 
     public DuelEventManager getDuelEventManager() {
         return duelEventManager;
+    }
+
+    public KothManager getKothManager() {
+        return kothManager;
     }
 }
