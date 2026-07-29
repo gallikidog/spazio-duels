@@ -35,6 +35,7 @@ public class DuelMatch {
     private long startTime;
     private long endTime;
 
+    private final Map<UUID, org.bukkit.Location> preDuelLocations = new HashMap<>();
     private DuelTeam winner;
 
     public DuelMatch(SpazioDuelsPlugin plugin, Arena arena, Kit kit, DuelMode mode, DuelTeam team1, DuelTeam team2, HandicapRule handicapRule) {
@@ -96,7 +97,8 @@ public class DuelMatch {
 
     private void setupTeam(DuelTeam team, org.bukkit.Location spawn) {
         for (Player player : team.getOnlinePlayers()) {
-            // Save pre-duel inventory to disk for anti-dupe safety
+            // Save pre-duel location & inventory
+            preDuelLocations.put(player.getUniqueId(), player.getLocation().clone());
             plugin.getInventoryBackupManager().saveBackup(player);
 
             // Clean inventory & potion effects
@@ -111,6 +113,11 @@ public class DuelMatch {
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
             player.setFireTicks(0);
+
+            // Enable 1.8.9 PvP attack speed if configured
+            if (plugin.getPvP18Manager() != null) {
+                plugin.getPvP18Manager().enable18PvP(player);
+            }
 
             // Teleport to arena spawn
             if (spawn != null) {
@@ -241,7 +248,35 @@ public class DuelMatch {
 
         broadcastMessage("&a&l=====================================");
         broadcastMessage("&e&l          DUELO FINALIZADO");
-        broadcastMessage("&7Ganadores: &a" + (winningTeam != null ? winningTeam.getFormattedMembers() : "Empate"));
+        broadcastMessage("&7Ganador: &a" + (winningTeam != null ? winningTeam.getFormattedMembers() : "Empate"));
+        broadcastMessage("");
+        broadcastMessage("&f&lEstadísticas de Jugadores:");
+
+        broadcastMessage("&b&l" + team1.getName() + ":");
+        for (UUID uuid : team1.getMembers()) {
+            Player p = Bukkit.getPlayer(uuid);
+            String name = p != null ? p.getName() : "Desconocido";
+            int hits = team1.getHits(uuid);
+            if (team1.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
+                String hp = String.format("%.1f", p.getHealth());
+                broadcastMessage(" &7- &f" + name + ": &a" + hp + " ❤ &7| &e" + hits + " golpes");
+            } else {
+                broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
+            }
+        }
+
+        broadcastMessage("&c&l" + team2.getName() + ":");
+        for (UUID uuid : team2.getMembers()) {
+            Player p = Bukkit.getPlayer(uuid);
+            String name = p != null ? p.getName() : "Desconocido";
+            int hits = team2.getHits(uuid);
+            if (team2.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
+                String hp = String.format("%.1f", p.getHealth());
+                broadcastMessage(" &7- &f" + name + ": &a" + hp + " ❤ &7| &e" + hits + " golpes");
+            } else {
+                broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
+            }
+        }
         broadcastMessage("&a&l=====================================");
 
         // Teleport back and restore original inventories after 3 seconds
@@ -256,17 +291,43 @@ public class DuelMatch {
     public void cleanupAndRestore() {
         List<Player> allPlayers = getAllPlayers();
         for (Player p : allPlayers) {
+            if (p == null || !p.isOnline()) continue;
+
+            // Reset player state (GameMode, Health, Potion effects, Fire, Fall distance)
+            p.setGameMode(GameMode.SURVIVAL);
+            p.setHealth(p.getMaxHealth());
+            p.setFoodLevel(20);
+            p.setFireTicks(0);
+            p.setFallDistance(0.0f);
+            for (PotionEffect effect : p.getActivePotionEffects()) {
+                p.removePotionEffect(effect.getType());
+            }
+
+            // Restore vanilla 1.9+ attack speed if changed
+            if (plugin.getPvP18Manager() != null) {
+                plugin.getPvP18Manager().restoreVanillaPvP(p);
+            }
+
             // Purge any remaining kit items
             plugin.getAntiDupeManager().purgeKitItems(p);
 
             // Restore original inventory from disk
             plugin.getInventoryBackupManager().restoreBackup(p);
 
-            // Teleport to lobby or arena spectator spawn
-            if (plugin.getArenaManager().getGlobalLobbySpawn() != null) {
-                p.teleport(plugin.getArenaManager().getGlobalLobbySpawn());
-            } else if (arena.getSpectatorSpawn() != null) {
-                p.teleport(arena.getSpectatorSpawn());
+            // Teleport to pre-duel location, lobby spawn, spectator spawn, or world spawn
+            org.bukkit.Location targetLoc = preDuelLocations.get(p.getUniqueId());
+            if (targetLoc == null || targetLoc.getWorld() == null) {
+                targetLoc = plugin.getArenaManager().getGlobalLobbySpawn();
+            }
+            if (targetLoc == null || targetLoc.getWorld() == null) {
+                targetLoc = arena.getSpectatorSpawn();
+            }
+            if (targetLoc == null || targetLoc.getWorld() == null) {
+                targetLoc = p.getWorld().getSpawnLocation();
+            }
+
+            if (targetLoc != null) {
+                p.teleport(targetLoc);
             }
         }
 

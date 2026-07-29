@@ -1,0 +1,61 @@
+# Configuration file for SpazioDuels Scoreboards
+scoreboard:
+  enabled: true
+  update_ticks: 2 # Update rate in server ticks (2 ticks = 100ms for smooth timer update)
+
+  # ======================================================
+  # KOTH SCOREBOARD (Estilo HCF)
+  # Se activa SOLAMENTE cuando el jugador está dentro de la zona
+  # de un KOTH activo.
+  # ======================================================
+  koth:
+    title: "&6&lKing Of The Hill"
+    lines:
+      - "&7&m-------------------"
+      - "&fKOTH: &b%koth_name%"
+      - "&fEstado: &e%koth_status%"
+      - "&fCapturado por:"
+      - " &a%koth_capper%"
+      - ""
+      - "&fTiempo restante:"
+      - " &e%koth_time_ms%"
+      - "&7&m-------------------"
+    capper_none: "&c&lNadie"
+    status_capturing: "&aCapturando..."
+    status_waiting: "&cSin capturar"
+
+  # ======================================================
+  # DUEL SCOREBOARD - MODO INDIVIDUAL (1v1) (Estilo Practice)
+  # ======================================================
+  duel_solo:
+    title: "&b&lDuelo 1v1"
+    lines:
+      - "&7&m-------------------"
+      - "&c&l%opponent_name%"
+      - " &7Vida: &c%opponent_health% ❤"
+      - " &7Golpes: &e%opponent_hits%"
+      - ""
+      - "&a&l%player_name%"
+      - " &7Vida: &a%player_health% ❤"
+      - " &7Golpes: &e%player_hits%"
+      - ""
+      - "&fDuración: &e%duel_time%"
+      - "&7&m-------------------"
+
+  # ======================================================
+  # DUEL SCOREBOARD - MODO EQUIPOS / PARTY (Estilo Practice)
+  # ======================================================
+  duel_team:
+    title: "&b&lDuelo de Equipos"
+    lines:
+      - "&7&m-------------------"
+      - "&a&lTu Equipo:"
+      - "%your_team_members%"
+      - ""
+      - "&c&lRival:"
+      - "%enemy_team_members%"
+      - ""
+      - "&fDuración: &e%duel_time%"
+      - "&7&m-------------------"
+    member_line_alive: " &7%player_name% &f(%health% ❤ - %hits% hits)"
+    member_line_dead: " &7%player_name% &c(MUERTO)"

@@ -20,6 +20,7 @@ public class KothMatch {
     private final Set<UUID> playersInOuterZone = new HashSet<>();
     private Player currentCapper;
     private int remainingSeconds;
+    private long captureEndTimestampMillis;
     private boolean active;
     private BukkitTask task;
 
@@ -86,12 +87,14 @@ public class KothMatch {
                 Bukkit.broadcast(TextUtil.toComponent("&c[KOTH] &e" + currentCapper.getName() + " &7ha perdido el control del KOTH &b" + koth.getName() + "&7."));
                 currentCapper = null;
                 remainingSeconds = koth.getCaptureDelaySeconds();
+                captureEndTimestampMillis = 0;
             }
         }
 
         if (currentCapper == null && !capperCandidates.isEmpty()) {
             currentCapper = capperCandidates.get(0);
             remainingSeconds = koth.getCaptureDelaySeconds();
+            captureEndTimestampMillis = System.currentTimeMillis() + (remainingSeconds * 1000L);
             Bukkit.broadcast(TextUtil.toComponent("&a[KOTH] &e" + currentCapper.getName() + " &7ha comenzado a capturar el KOTH &b" + koth.getName() + "&7!"));
         }
 
@@ -197,9 +200,25 @@ public class KothMatch {
         return active;
     }
 
+    public long getRemainingMillis() {
+        if (currentCapper == null || captureEndTimestampMillis <= 0) {
+            return remainingSeconds * 1000L;
+        }
+        return Math.max(0L, captureEndTimestampMillis - System.currentTimeMillis());
+    }
+
     public String formatTime(int totalSecs) {
         int minutes = totalSecs / 60;
         int seconds = totalSecs % 60;
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public String formatTimeMillis() {
+        long totalMillis = getRemainingMillis();
+        long totalSecs = totalMillis / 1000;
+        long minutes = totalSecs / 60;
+        long seconds = totalSecs % 60;
+        long tenths = (totalMillis % 1000) / 100;
+        return String.format("%02d:%02d.%d", minutes, seconds, tenths);
     }
 }

@@ -32,6 +32,8 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
     private DuelManager duelManager;
     private DuelEventManager duelEventManager;
     private KothManager kothManager;
+    private network.minespazio.spazioduels.scoreboard.ScoreboardManager scoreboardManager;
+    private network.minespazio.spazioduels.pvp.PvP18Manager pvp18Manager;
 
     @Override
     public void onEnable() {
@@ -46,6 +48,8 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
         this.duelManager = new DuelManager(this);
         this.duelEventManager = new DuelEventManager(this);
         this.kothManager = new KothManager(this);
+        this.scoreboardManager = new network.minespazio.spazioduels.scoreboard.ScoreboardManager(this);
+        this.pvp18Manager = new network.minespazio.spazioduels.pvp.PvP18Manager(this);
 
         // Register survival_core addon hook
         this.addonHook = new SurvivalCoreAddonHook(this);
@@ -56,6 +60,7 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MatchListener(this), this);
         getServer().getPluginManager().registerEvents(new AntiDupeListener(this), this);
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new network.minespazio.spazioduels.pvp.PvP18Listener(this, pvp18Manager), this);
 
         // Register commands
         if (getCommand("duel") != null) {
@@ -106,6 +111,10 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
             kothManager.stopActiveMatch();
         }
 
+        if (scoreboardManager != null) {
+            scoreboardManager.clearAllBoards();
+        }
+
         // Unregister survival_core addon hook
         if (addonHook != null) {
             addonHook.unregister();
@@ -148,5 +157,13 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
 
     public KothManager getKothManager() {
         return kothManager;
+    }
+
+    public network.minespazio.spazioduels.scoreboard.ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
+    }
+
+    public network.minespazio.spazioduels.pvp.PvP18Manager getPvP18Manager() {
+        return pvp18Manager;
     }
 }

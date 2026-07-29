@@ -53,7 +53,7 @@ public class PlayerKitsHook {
                 }
 
                 // Inventory & armor contents
-                List<ItemStack> contentsList = new ArrayList<>();
+                ItemStack[] contents = new ItemStack[36];
                 ItemStack[] armor = new ItemStack[4]; // 0: boots, 1: leggings, 2: chestplate, 3: helmet
                 ItemStack offHand = null;
 
@@ -67,24 +67,52 @@ public class PlayerKitsHook {
                             continue;
                         }
 
-                        Material type = item.getType();
-                        String typeName = type.name();
+                        int slot = -1;
+                        if (kitItem.getId() != null) {
+                            try {
+                                slot = Integer.parseInt(kitItem.getId());
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
 
-                        if (typeName.endsWith("_HELMET") && armor[3] == null) {
-                            armor[3] = item;
-                        } else if (typeName.endsWith("_CHESTPLATE") && armor[2] == null) {
-                            armor[2] = item;
-                        } else if (typeName.endsWith("_LEGGINGS") && armor[1] == null) {
-                            armor[1] = item;
-                        } else if (typeName.endsWith("_BOOTS") && armor[0] == null) {
-                            armor[0] = item;
+                        if (slot >= 0 && slot < 36) {
+                            contents[slot] = item;
+                        } else if (slot == 36) {
+                            armor[0] = item; // Boots
+                        } else if (slot == 37) {
+                            armor[1] = item; // Leggings
+                        } else if (slot == 38) {
+                            armor[2] = item; // Chestplate
+                        } else if (slot == 39) {
+                            armor[3] = item; // Helmet
+                        } else if (slot == 40) {
+                            offHand = item;
                         } else {
-                            contentsList.add(item);
+                            // Fallback logic for unmapped slots or material types
+                            Material type = item.getType();
+                            String typeName = type.name();
+
+                            if (typeName.endsWith("_HELMET") && armor[3] == null) {
+                                armor[3] = item;
+                            } else if (typeName.endsWith("_CHESTPLATE") && armor[2] == null) {
+                                armor[2] = item;
+                            } else if (typeName.endsWith("_LEGGINGS") && armor[1] == null) {
+                                armor[1] = item;
+                            } else if (typeName.endsWith("_BOOTS") && armor[0] == null) {
+                                armor[0] = item;
+                            } else {
+                                // Place in first empty slot in contents
+                                for (int i = 0; i < contents.length; i++) {
+                                    if (contents[i] == null) {
+                                        contents[i] = item;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                ItemStack[] contents = contentsList.toArray(new ItemStack[36]);
                 Kit kit = new Kit(kitName, icon, contents, armor, offHand, new ArrayList<>(), false, true, true);
                 importedKits.add(kit);
             }

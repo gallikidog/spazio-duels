@@ -12,6 +12,20 @@ settings:
   # Permitir vuelo durante duelos
   allow_flight: false
 
+# ======================================================
+# Configuración de Mecánicas PvP 1.8.9 (Practice Hit Detection & Knockback)
+# ======================================================
+pvp_1_8:
+  enabled: true # Habilitar mecánicas PvP 1.8.9 durante duelos
+  disable_attack_cooldown: true # Desactiva el indicador y retardo de ataque de Minecraft 1.9+ (Ataques instantáneos estilo 1.8.9)
+  no_damage_ticks: 10 # Ticks de invulnerabilidad tras un golpe (Vanilla = 20, 1.8 PvP = 10-12)
+  knockback:
+    enabled: true
+    horizontal: 0.4
+    vertical: 0.36
+    extra_sprint_horizontal: 0.15
+    vertical_limit: 0.45
+
 protection:
   # Comandos permitidos durante el duelo
   command_whitelist:

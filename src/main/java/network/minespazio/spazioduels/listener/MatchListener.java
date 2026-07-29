@@ -68,9 +68,10 @@ public class MatchListener implements Listener {
                     return;
                 }
 
-                // Track damage dealt
+                // Track damage dealt and hits
                 if (teamAttacker != null) {
                     teamAttacker.addDamage(attacker.getUniqueId(), event.getFinalDamage());
+                    teamAttacker.addHit(attacker.getUniqueId());
                 }
             } else if (matchVictim != null || matchAttacker != null) {
                 // Prevent interference from outside players

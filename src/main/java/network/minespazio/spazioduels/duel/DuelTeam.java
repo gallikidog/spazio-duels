@@ -11,6 +11,7 @@ public class DuelTeam {
     private final List<UUID> members = new ArrayList<>();
     private final Set<UUID> aliveMembers = new HashSet<>();
     private final Map<UUID, Double> damageDealt = new HashMap<>();
+    private final Map<UUID, Integer> hitsDealt = new HashMap<>();
 
     public DuelTeam(String name, List<Player> players) {
         this.name = name;
@@ -18,6 +19,7 @@ public class DuelTeam {
             this.members.add(p.getUniqueId());
             this.aliveMembers.add(p.getUniqueId());
             this.damageDealt.put(p.getUniqueId(), 0.0);
+            this.hitsDealt.put(p.getUniqueId(), 0);
         }
     }
 
@@ -73,6 +75,14 @@ public class DuelTeam {
             total += d;
         }
         return total;
+    }
+
+    public void addHit(UUID uuid) {
+        hitsDealt.put(uuid, hitsDealt.getOrDefault(uuid, 0) + 1);
+    }
+
+    public int getHits(UUID uuid) {
+        return hitsDealt.getOrDefault(uuid, 0);
     }
 
     public String getFormattedMembers() {

@@ -197,6 +197,9 @@ public class SpazioDuelsAdminCommand implements CommandExecutor, TabCompleter {
             plugin.reloadConfig();
             plugin.getKitManager().loadKits();
             plugin.getArenaManager().loadArenas();
+            if (plugin.getScoreboardManager() != null) {
+                plugin.getScoreboardManager().reloadConfig();
+            }
             sender.sendMessage(TextUtil.colorize("&aSpazioDuels reloaded exitosamente."));
             return true;
         }
