@@ -71,6 +71,18 @@ event:
     - "	 &e&l[ - CLICK PARA VER LA INFORMACION - ]"
     - "&e-------------------------------------------"
 
+# Hosteo automatico de eventos/torneos de duelos durante el dia
+duel_event_autostart:
+  enabled: true
+  interval_minutes: 90
+  modes_pool:
+    - "1v1"
+    - "2v2"
+    - "3v3"
+    - "4v4"
+    - "2v1"
+  kits_pool: []
+
 # Configuración del Sistema KOTH (King Of The Hill)
 koth:
   # Titulo de entrada a la zona del KOTH

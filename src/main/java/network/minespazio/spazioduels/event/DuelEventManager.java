@@ -19,6 +19,7 @@ public class DuelEventManager {
 
     public DuelEventManager(SpazioDuelsPlugin plugin) {
         this.plugin = plugin;
+        startAutoSchedule();
     }
 
     public DuelEvent startEvent(String eventName, DuelMode mode, Kit kit) {
@@ -56,6 +57,53 @@ public class DuelEventManager {
         }.runTaskTimer(plugin, 100L, 100L); // Every 5s
 
         return activeEvent;
+    }
+
+    private void startAutoSchedule() {
+        if (!plugin.getConfig().getBoolean("duel_event_autostart.enabled", false)) return;
+
+        int intervalMinutes = plugin.getConfig().getInt("duel_event_autostart.interval_minutes", 90);
+        long ticks = intervalMinutes * 60 * 20L;
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (activeEvent != null && activeEvent.getState() != EventState.FINISHED) {
+                    return; // An event is currently running
+                }
+
+                // Select mode
+                List<String> configuredModes = plugin.getConfig().getStringList("duel_event_autostart.modes_pool");
+                DuelMode selectedMode;
+                if (configuredModes != null && !configuredModes.isEmpty()) {
+                    String rawMode = configuredModes.get(new Random().nextInt(configuredModes.size()));
+                    selectedMode = DuelMode.fromString(rawMode);
+                } else {
+                    DuelMode[] modes = DuelMode.values();
+                    selectedMode = modes[new Random().nextInt(modes.length)];
+                }
+
+                // Select kit
+                List<String> configuredKits = plugin.getConfig().getStringList("duel_event_autostart.kits_pool");
+                Kit selectedKit = null;
+                if (configuredKits != null && !configuredKits.isEmpty()) {
+                    String kitName = configuredKits.get(new Random().nextInt(configuredKits.size()));
+                    selectedKit = plugin.getKitManager().getKit(kitName);
+                }
+
+                if (selectedKit == null) {
+                    List<Kit> enabledKits = plugin.getKitManager().getEnabledKitsForDuels();
+                    if (!enabledKits.isEmpty()) {
+                        selectedKit = enabledKits.get(new Random().nextInt(enabledKits.size()));
+                    }
+                }
+
+                if (selectedKit != null) {
+                    startEvent("Torneo de Duelos Automático", selectedMode, selectedKit);
+                    plugin.getLogger().info("Torneo automático de duelos iniciado (Modo: " + selectedMode.getDisplayName() + ", Kit: " + selectedKit.getName() + ").");
+                }
+            }
+        }.runTaskTimer(plugin, ticks, ticks);
     }
 
     public void registerSummary(EventSummary summary) {

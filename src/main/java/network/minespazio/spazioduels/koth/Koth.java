@@ -21,7 +21,8 @@ public class Koth {
         this.lootItems = new ArrayList<>();
     }
 
-    public Koth(String name, int captureDelaySeconds, CuboidRegion zone, CuboidRegion capZone, List<ItemStack> lootItems) {
+    public Koth(String name, int captureDelaySeconds, CuboidRegion zone, CuboidRegion capZone,
+            List<ItemStack> lootItems) {
         this.name = name;
         this.captureDelaySeconds = captureDelaySeconds > 0 ? captureDelaySeconds : 300;
         this.zone = zone;
