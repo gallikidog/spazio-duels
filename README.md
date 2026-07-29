@@ -162,4 +162,4 @@
 
 ---
 
-*Desarrollado con ❤️ para el core survival_core.*
+*Desarrollado por y para MineSpazio Network*
