@@ -1,6 +1,6 @@
-# ⚔️ SpazioDuels
+# ⚔️ SpazioDuels (v1.1.1)
 
-**SpazioDuels** es un plugin modular, robusto y optimizado para entornos de producción de Minecraft (**Paper 1.21.10** / **Java 21**). Diseñado como un addon nativo para el core `survival_core`, ofrece un sistema completo de **Duelos**, **Eventos Automáticos**, **Integración con PlayerKits2**, **Protección Anti-Dupe** y un sistema de **KOTH (King Of The Hill)** integrado con WorldEdit y Placeholders en tiempo real.
+**SpazioDuels** es un plugin modular, robusto y optimizado para entornos de producción de Minecraft (**Paper 1.21.10** / **Java 21**). Diseñado como un addon nativo para el core `survival_core`, ofrece un sistema completo de **Duelos**, **Eventos Automáticos de Duelos**, **Hosteo Automático de KOTHs**, **Integración con PlayerKits2**, **Protección Anti-Dupe** y **WorldEdit / FAWE**.
 
 ---
 
@@ -15,32 +15,30 @@
   - **Handicap (2v1, 3v2, 4v3)**: Modalidades con desventajas automáticas configurables para el equipo mayoritario (ej. sin casco o vida reducida).
 - **Límite de Tiempo**: Duración máxima de 10 minutos (configurable) con temporizador en la Actionbar.
 
+### 🏆 Eventos Automáticos de Duelos y Torneos Programados
+- **Torneos Automáticos**: Anuncios interactivos en el chat con botón `- CLICK PARA INGRESAR AL EVENTO -` y desarrollo automático de rondas de torneo (brackets).
+- **Resumen Post-Evento**: Botón `- CLICK PARA VER LA INFORMACION -` que abre la GUI `EventSummaryGUI` mostrando el ganador, duración, muertes y recompensas.
+- **Programación Automática (`duel_event_autostart`)**: Configurable en `config.yml` para hostear eventos y torneos de duelos automáticamente durante el día en todos los modos (`1v1`, `2v2`, `3v3`, `4v4`, `handicap`) y con kits aleatorios.
+
 ### 🏰 Sistema KOTH (King Of The Hill)
 - **Creación & Configuración**: Definición de tiempo de captura (`/koth setcapdelay`), botín interactivo con botón **GUARDAR LOOT** (`/koth setloot`).
 - **Integración con WorldEdit / FAWE**: Configuración de zona perimetral (`/koth setzone`) y zona de captura (`/koth setcapzone`).
-- **Notificaciones & Títulos**:
-  - Título en pantalla durante 2 segundos al ingresar a la zona perimetral del KOTH.
-  - Título en pantalla durante 2 segundos para el ganador al completar la captura.
-  - Anuncio global en el chat al capturar el KOTH y entrega directa del botín guardado.
-- **Scoreboard en Tiempo Real**: Placeholders en vivo para mostrar el KOTH activo, el jugador capturando y el tiempo restante.
-- **Hosteo Automático**: Programación automática de KOTHs aleatorios durante el día (`koth_autostart`).
+- **Notificaciones & Títulos**: Título en pantalla durante 2 segundos al entrar al área y al capturar el KOTH.
+- **Scoreboard en Tiempo Real**: Placeholders en vivo para mostrar el KOTH activo, capper y tiempo restante.
+- **Hosteo Automático de KOTHs (`koth_autostart`)**: Programación automática de KOTHs aleatorios durante el día.
 
 ### 📦 Integración con PlayerKits (PlayerKits2)
 - **Importación Directa**: Detecta automáticamente el plugin **PlayerKits2** e importa todos los kits configurados en el servidor.
-- **Gestión de Kits (`/sd adminkits`)**: Panel GUI interactivo con lana/concreto verde/roja para marcar qué kits están **HABILITADOS** o **DESHABILITADOS** para duelos.
+- **Gestión de Kits (`/sd adminkits`)**: Panel GUI interactivo para marcar qué kits están **HABILITADOS** o **DESHABILITADOS** para duelos.
 
 ### 🔒 Sistema Anti-Dupe de Grado de Producción
 - **Etiquetado PDC**: Todos los ítems de kit están marcados con `spazioduels:kit_item`.
 - **Protección de Contenedores y Dropeos**: Cancela la tirada de ítems y bloquea guardar ítems de duelos en cofres, shulkers, ender chests y marcos.
-- **Restauración Asegurada (Disk-Backed)**: Respaldo automático del inventario original, armadura, XP, vida y comida en `plugins/SpazioDuels/data/inventories/<uuid>.yml` con restauración garantizada al finalizar la partida, desconectarse o ante un reinicio del servidor.
+- **Restauración Asegurada (Disk-Backed)**: Respaldo automático del inventario original en `plugins/SpazioDuels/data/inventories/<uuid>.yml` con restauración garantizada al finalizar la partida, desconectarse o ante un reinicio del servidor.
 
 ### 🛡️ Setup In-Game & Protección de Arenas
 - **Configuración In-Game**: Definición de `spawn1`, `spawn2`, `spectator` y `lobby` global.
 - **Protección de Comandos & Rollback**: Bloqueo de comandos no autorizados durante duelos y rollback automático de bloques colocados en la arena (ej. cobwebs/agua/lava en kits UHC).
-
-### 🏆 Eventos Automáticos de Duelos
-- **Torneos Automáticos**: Anuncios interactivos en el chat con botón `- CLICK PARA INGRESAR AL EVENTO -` y desarrollo automático de rondas de torneo (brackets).
-- **Resumen Post-Evento**: Botón `- CLICK PARA VER LA INFORMACION -` que abre la GUI `EventSummaryGUI` mostrando el ganador, duración, muertes y recompensas.
 
 ---
 
@@ -125,28 +123,6 @@
 | `%spazioduels_koth_name%` | Nombre del KOTH activo. | `KothCentral` |
 | `%spazioduels_koth_capper%` | Jugador capturando el KOTH en tiempo real. | `Valen` / `Nadie` |
 | `%spazioduels_koth_time%` | Tiempo restante para capturar el KOTH. | `04:35` |
-
----
-
-## ⚙️ Guías de Configuración Paso a Paso
-
-### ⚔️ Configurar una Arena de Duelos
-1. Sitúate en el Spawn del Jugador 1 y ejecuta: `/sd setup setspawn1 Arena1`
-2. Sitúate en el Spawn del Jugador 2 y ejecuta: `/sd setup setspawn2 Arena1`
-3. Configura el punto de espectador: `/sd setup setspectator Arena1`
-4. Configura el lobby de retorno: `/sd setup setlobby`
-
-### 📦 Habilitar Kits para Duelos
-1. Ejecuta `/sd adminkits` para abrir la GUI de gestión de kits.
-2. Haz clic sobre los kits importados de **PlayerKits2** o nativos para cambiar su estado a `[ HABILITADO PARA DUELOS ]` (Verde).
-
-### 🏰 Configurar un KOTH
-1. Crea el KOTH: `/koth create KothCentral`
-2. Establece el tiempo de captura (en segundos): `/koth setcapdelay KothCentral 300` (5 minutos)
-3. Selecciona el área del KOTH con WorldEdit (`//wand`) y ejecuta: `/koth setzone KothCentral`
-4. Selecciona la zona de captura interna con WorldEdit (`//wand`) y ejecuta: `/koth setcapzone KothCentral`
-5. Configura el botín: `/koth setloot KothCentral`, deposita los ítems en la GUI y haz clic en **`[ GUARDAR LOOT ]`**.
-6. Inicia el KOTH con `/koth start KothCentral`.
 
 ---
 
