@@ -91,8 +91,12 @@ public class DuelEvent {
             player.sendMessage(TextUtil.colorize("&cEl evento ya ha comenzado o finalizado."));
             return false;
         }
+        if (this.plugin.getDuelManager().isInDuel(player)) {
+            player.sendMessage(TextUtil.colorize("&cNo puedes unirte al evento mientras estás en un duelo."));
+            return false;
+        }
         if (this.registeredPlayers.contains(player.getUniqueId())) {
-            player.sendMessage(TextUtil.colorize("&cYa est\u00e1s registrado en este evento."));
+            player.sendMessage(TextUtil.colorize("&cYa estás registrado en este evento."));
             return false;
         }
         if (this.registeredPlayers.size() >= this.getMaxParticipants()) {
@@ -100,7 +104,7 @@ public class DuelEvent {
             return false;
         }
         this.registeredPlayers.add(player.getUniqueId());
-        player.sendMessage(TextUtil.colorize("&a\u00a1Te has unido exitosamente al evento de duelos!"));
+        player.sendMessage(TextUtil.colorize("&a¡Te has unido exitosamente al evento de duelos!"));
         if (this.plugin.getConfig().getBoolean("event.auto_start_on_full", true) && this.registeredPlayers.size() >= this.getMaxParticipants()) {
             Bukkit.broadcast((Component)TextUtil.toComponent("&aEl Evento de Duelos inicio porque todos los cupos fueron ocupados."));
             this.startTournament();
@@ -116,17 +120,20 @@ public class DuelEvent {
         return this.mode.getTeam1Size() + this.mode.getTeam2Size();
     }
 
-    public void startTournament() {
+    public synchronized void startTournament() {
+        if (this.state != EventState.WAITING_PLAYERS) {
+            return;
+        }
         if (this.registeredPlayers.size() < 2) {
             Bukkit.broadcast((Component)TextUtil.toComponent("&cEl Evento de Duelos ha sido cancelado por falta de participantes."));
             this.state = EventState.FINISHED;
             return;
         }
         this.state = EventState.RUNNING_TOURNAMENT;
-        Bukkit.broadcast((Component)TextUtil.toComponent("&a\u00a1El Evento de Duelos ha comenzado con &e" + this.registeredPlayers.size() + " &ajugadores!"));
+        Bukkit.broadcast((Component)TextUtil.toComponent("&a¡El Evento de Duelos ha comenzado con &e" + this.registeredPlayers.size() + " &ajugadores!"));
         ArrayList<Player> playersList = new ArrayList<Player>();
         for (UUID uuid : this.registeredPlayers) {
-            Player p = Bukkit.getPlayer((UUID)uuid);
+            Player p = Bukkit.getPlayer(uuid);
             if (p == null || !p.isOnline()) continue;
             playersList.add(p);
         }
@@ -136,7 +143,7 @@ public class DuelEvent {
         for (int i = 0; i < playersList.size(); i += teamSize) {
             ArrayList<Player> teamMembers = new ArrayList<Player>();
             for (int j = 0; j < teamSize && i + j < playersList.size(); ++j) {
-                teamMembers.add((Player)playersList.get(i + j));
+                teamMembers.add(playersList.get(i + j));
             }
             DuelTeam team = new DuelTeam("Equipo " + teamCount++, teamMembers);
             this.activeTeams.add(team);
@@ -149,8 +156,9 @@ public class DuelEvent {
             this.finishEvent();
             return;
         }
-        final List<DuelTeam> winnersOfRound = Collections.synchronizedList(new ArrayList());
-        ArrayList roundMatches = new ArrayList();
+        final List<DuelTeam> winnersOfRound = Collections.synchronizedList(new ArrayList<DuelTeam>());
+        final int expectedWinners = (this.activeTeams.size() + 1) / 2;
+
         for (int i = 0; i < this.activeTeams.size(); i += 2) {
             if (i + 1 < this.activeTeams.size()) {
                 DuelTeam t1 = this.activeTeams.get(i);
@@ -174,6 +182,8 @@ public class DuelEvent {
                                 DuelTeam roundWinner = match.getWinner();
                                 if (roundWinner != null) {
                                     winnersOfRound.add(roundWinner);
+                                } else {
+                                    winnersOfRound.add(t1); // Default winner fallback on tie
                                 }
                             }
                         }
@@ -185,6 +195,7 @@ public class DuelEvent {
             }
             winnersOfRound.add(this.activeTeams.get(i));
         }
+
         new BukkitRunnable(){
 
             public void run() {
@@ -192,11 +203,17 @@ public class DuelEvent {
                     this.cancel();
                     return;
                 }
-                if (winnersOfRound.size() >= DuelEvent.this.activeTeams.size() / 2) {
+                if (winnersOfRound.size() >= expectedWinners) {
                     this.cancel();
                     DuelEvent.this.activeTeams.clear();
                     DuelEvent.this.activeTeams.addAll(winnersOfRound);
-                    DuelEvent.this.runBracketRound();
+                    new BukkitRunnable() {
+                        public void run() {
+                            if (DuelEvent.this.state != EventState.FINISHED) {
+                                DuelEvent.this.runBracketRound();
+                            }
+                        }
+                    }.runTaskLater((Plugin)DuelEvent.this.plugin, 40L);
                 }
             }
         }.runTaskTimer((Plugin)this.plugin, 40L, 20L);

@@ -1,14 +1,14 @@
-# SpazioDuels v1.2.9 - Duel & KOTH Engine Core
+# SpazioDuels v1.3.0 - Duel & KOTH Engine Core
 
 **SpazioDuels** es el plugin avanzado de duelos PvP, eventos automáticos, combate por equipos y rey de la colina (**KOTH**) desarrollado para la infraestructura de **survival_core** en **Paper 1.21+**.
 
 ---
 
-## 🌟 Características Principales (v1.2.9)
+## 🌟 Características Principales (v1.3.0)
 
 - ⚔️ **Duelos 1v1 y Party vs Party**: Sistema de desafíos PvP en arenas aisladas con selecciones de kits, tiempo de cuenta regresiva, prevención de deserciones y visualización de salud final del ganador.
 - 👑 **King Of The Hill (KOTH)**: Sistema completo de KOTH con selección de áreas y zonas de captura mediante WorldEdit, tiempos personalizables, mensajes de emisión globales, GUI de recompensas de ítems (`KothLootGUI`) y comandos de recompensa ejecutados por consola con probabilidades porcentuales.
-- 🏆 **Eventos y Torneos Automáticos (`/duelevent`)**: Organiza torneos masivos por llaves o eliminatorias de duelos en el servidor con resúmenes interactivos en GUI (`EventSummaryGUI`).
+- 🏆 **Eventos y Torneos Automáticos (`/duelevent`)**: Organiza torneos masivos por llaves o eliminatorias de duelos en el servidor con resúmenes interactivos en GUI (`EventSummaryGUI`). Los comandos administrativos (`start`, `cancel`, `autowin`) requieren estrictamente el permiso `spazioduels.admin.event`, mientras que los usuarios comunes pueden usar `/duelevent join` y `/duelevent summary`.
 - 👥 **Sistema de Parties (`/party`)**: Permite a los jugadores formar equipos para combatir en duelos grupales.
 - 🛡️ **AntiDupe y Guardado de Inventarios**: Preserva el inventario real del jugador antes del duelo, previene la clonación de ítems etiquetando objetos de kits con `PersistentDataContainer` y garantiza el rollback automático de bloques en arenas desarmables (`ArenaRollback`).
 - ⚡ **PvP 1.8 Mechanics**: Opción de deshabilitar el cooldown de ataques para simular las mecánicas de combate PvP de Minecraft 1.8.
@@ -23,7 +23,7 @@
 | :--- | :--- | :--- | :--- |
 | `/duel <jugador>` | `/duelo`, `/duels` | Desafía a un jugador a un duelo o gestiona respuestas (`accept`, `deny`, `forfeit`). | Usuario |
 | `/party <subcomando>` | `/p`, `/equipo`, `/team` | Sistema de parties (`create`, `invite`, `accept`, `leave`, `disband`, `kick`, `info`). | Usuario |
-| `/duelevent <subcomando>` | `/eventoduel`, `/devent` | Administra y participa en torneos automáticos de duelos (`start`, `cancel`, `join`, `autowin`, `summary`). | `spazioduels.admin.event` |
+| `/duelevent <subcomando>` | `/eventoduel`, `/devent` | Administra y participa en torneos automáticos de duelos (`start`, `cancel`, `autowin`, `join`, `summary`). | Admin (`start`/`cancel`/`autowin`): `spazioduels.admin.event` \| Usuario: `join`/`summary` |
 | `/koth <subcomando>` | `/kingofthehill` | Administración total de KOTHs (`create`, `delete`, `setzone`, `setcapzone`, `setcapdelay`, `setloot`, `addcommandreward`, `removecommandreward`, `listcommandrewards`, `start`, `stop`, `list`, `info`, `reload`). | `spazioduels.admin.koth` |
 | `/spazioduels <subcomando>` | `/sd`, `/sduels` | Administración general del plugin, setup de arenas, gestión de kits y recarga (`setup`, `adminkits`, `kit`, `reload`). | `spazioduels.admin` |
 
@@ -34,7 +34,7 @@
 | Permiso | Descripción | Por Defecto |
 | :--- | :--- | :--- |
 | `spazioduels.admin` | Acceso completo a la configuración, arenas, kits y administración (`/spazioduels`). | `OP` |
-| `spazioduels.admin.event` | Permite iniciar, cancelar y administrar eventos de duelos (`/duelevent`). | `OP` |
+| `spazioduels.admin.event` | Permite iniciar, cancelar y administrar eventos de duelos (`/duelevent start`, `cancel`, `autowin`). | `OP` |
 | `spazioduels.admin.koth` | Permite crear, editar zonas WorldEdit, loot y controlar KOTHs (`/koth`). | `OP` |
 | `spazioduels.admin.bypass` | Permite ejecutar comandos de consola prohibidos durante un duelo activo. | `OP` |
 
