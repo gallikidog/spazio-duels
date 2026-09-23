@@ -85,4 +85,4 @@
    ```bash
    mvn clean package
    ```
-4. El archivo final generado se encontrará en: `target/spazioduels-1.2.9.jar`.
+4. El archivo final generado se encontrará en: `target/spazioduels-1.3.0.jar`.

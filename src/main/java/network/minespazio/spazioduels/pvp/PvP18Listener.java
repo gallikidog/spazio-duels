@@ -63,7 +63,7 @@ implements Listener {
             return;
         }
         DuelMatch match = this.plugin.getDuelManager().getMatch(victim);
-        if (match == null || !match.isStarted() || match.isFinished()) {
+        if (match == null || !match.isStarted() || match.isCountingDown() || match.isFinished()) {
             return;
         }
         if (!this.pvpManager.isPvP18Enabled()) {

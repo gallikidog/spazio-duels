@@ -102,7 +102,20 @@ public class DuelMatch {
                     DuelMatch.this.countingDown = false;
                     DuelMatch.this.started = true;
                     DuelMatch.this.startTime = System.currentTimeMillis();
-                    DuelMatch.this.broadcastMessage("&a&l\u00a1EL DUELO HA COMENZADO!");
+
+                    for (Player p : DuelMatch.this.getAllPlayers()) {
+                        if (p != null && p.isOnline()) {
+                            p.setInvulnerable(false);
+                            org.bukkit.attribute.AttributeInstance maxHealthAttr = p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+                            double maxHp = maxHealthAttr != null ? maxHealthAttr.getValue() : 20.0D;
+                            p.setHealth(maxHp);
+                            p.setFoodLevel(20);
+                            p.setFireTicks(0);
+                            p.setNoDamageTicks(10);
+                        }
+                    }
+
+                    DuelMatch.this.broadcastMessage("&a&l¡EL DUELO HA COMENZADO!");
                     DuelMatch.this.playSound(Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f);
                     DuelMatch.this.startMatchTimer();
                 }
@@ -121,12 +134,17 @@ public class DuelMatch {
                 player.removePotionEffect(effect.getType());
             }
             player.setGameMode(GameMode.SURVIVAL);
-            player.setInvulnerable(false);
+            player.setInvulnerable(true); // Invulnerable during countdown
             player.setNoDamageTicks(0);
             player.setFallDistance(0.0f);
-            player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
             player.setFireTicks(0);
+
+            org.bukkit.attribute.AttributeInstance maxHealthAttr = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+            if (maxHealthAttr != null) {
+                maxHealthAttr.setBaseValue(20.0D);
+            }
+
             if (this.plugin.getPvP18Manager() != null) {
                 this.plugin.getPvP18Manager().enable18PvP(player);
             }
@@ -171,6 +189,10 @@ public class DuelMatch {
                     this.plugin.getAntiDupeManager().markPlayerInventory(player);
                 }
             }
+
+            // Set health after kit and armor equipment
+            double maxHp = maxHealthAttr != null ? maxHealthAttr.getValue() : 20.0D;
+            player.setHealth(maxHp);
             player.updateInventory();
         }
     }

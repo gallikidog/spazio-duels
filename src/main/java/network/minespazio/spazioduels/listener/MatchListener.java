@@ -80,6 +80,10 @@ implements Listener {
             DuelMatch matchVictim = this.plugin.getDuelManager().getMatch(victim);
             DuelMatch matchAttacker = this.plugin.getDuelManager().getMatch(attacker);
             if (matchVictim != null && matchAttacker != null && matchVictim.equals(matchAttacker)) {
+                if (!matchVictim.isStarted() || matchVictim.isCountingDown() || matchVictim.isFinished()) {
+                    event.setCancelled(true);
+                    return;
+                }
                 DuelTeam teamVictim = matchVictim.getTeamOf(victim);
                 DuelTeam teamAttacker = matchAttacker.getTeamOf(attacker);
                 if (teamVictim != null && teamVictim.equals(teamAttacker)) {
