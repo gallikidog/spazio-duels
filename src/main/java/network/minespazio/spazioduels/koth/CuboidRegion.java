@@ -1,12 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.Location
+ *  org.bukkit.configuration.ConfigurationSection
+ */
 package network.minespazio.spazioduels.koth;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class CuboidRegion {
-
     private final String worldName;
     private final int minX;
     private final int minY;
@@ -26,55 +30,63 @@ public class CuboidRegion {
     }
 
     public boolean contains(Location loc) {
-        if (loc == null || loc.getWorld() == null) return false;
-        if (!loc.getWorld().getName().equals(worldName)) return false;
+        if (loc == null || loc.getWorld() == null) {
+            return false;
+        }
+        if (!loc.getWorld().getName().equals(this.worldName)) {
+            return false;
+        }
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        return x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ;
+        return x >= this.minX && x <= this.maxX && y >= this.minY && y <= this.maxY && z >= this.minZ && z <= this.maxZ;
     }
 
     public String getWorldName() {
-        return worldName;
+        return this.worldName;
     }
 
     public int getMinX() {
-        return minX;
+        return this.minX;
     }
 
     public int getMinY() {
-        return minY;
+        return this.minY;
     }
 
     public int getMinZ() {
-        return minZ;
+        return this.minZ;
     }
 
     public int getMaxX() {
-        return maxX;
+        return this.maxX;
     }
 
     public int getMaxY() {
-        return maxY;
+        return this.maxY;
     }
 
     public int getMaxZ() {
-        return maxZ;
+        return this.maxZ;
     }
 
     public void toConfig(ConfigurationSection sec) {
-        if (sec == null) return;
-        sec.set("world", worldName);
-        sec.set("min_x", minX);
-        sec.set("min_y", minY);
-        sec.set("min_z", minZ);
-        sec.set("max_x", maxX);
-        sec.set("max_y", maxY);
-        sec.set("max_z", maxZ);
+        if (sec == null) {
+            return;
+        }
+        sec.set("world", (Object)this.worldName);
+        sec.set("min_x", (Object)this.minX);
+        sec.set("min_y", (Object)this.minY);
+        sec.set("min_z", (Object)this.minZ);
+        sec.set("max_x", (Object)this.maxX);
+        sec.set("max_y", (Object)this.maxY);
+        sec.set("max_z", (Object)this.maxZ);
     }
 
     public static CuboidRegion fromConfig(ConfigurationSection sec) {
-        if (sec == null || !sec.contains("world")) return null;
+        if (sec == null || !sec.contains("world")) {
+            return null;
+        }
         String world = sec.getString("world");
         int minX = sec.getInt("min_x");
         int minY = sec.getInt("min_y");
@@ -85,3 +97,4 @@ public class CuboidRegion {
         return new CuboidRegion(world, minX, minY, minZ, maxX, maxY, maxZ);
     }
 }
+

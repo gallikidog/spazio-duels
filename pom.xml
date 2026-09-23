@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>network.minespazio</groupId>
-    <artifactId>SpazioDuels</artifactId>
-    <version>1.2.0</version>
+    <artifactId>spazioduels</artifactId>
+    <version>1.2.9</version>
     <packaging>jar</packaging>
 
     <name>SpazioDuels</name>
-    <description>Plugin modular de duelos y KOTH para survival_core</description>
+    <description>Recovered source for the SpazioDuels duel and KOTH plugin.</description>
 
     <properties>
-        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <paper.version>1.21.10-R0.1-SNAPSHOT</paper.version>
+        <worldedit.version>7.2.6</worldedit.version>
+        <bungeecord.chat.version>1.21-R0.2-deprecated+build.21</bungeecord.chat.version>
+        <survival.core.jar>${project.basedir}/libs/survival_core.jar</survival.core.jar>
+        <placeholderapi.jar>${project.basedir}/libs/PlaceholderAPI.jar</placeholderapi.jar>
+        <playerkits2.jar>${project.basedir}/libs/PlayerKits2.jar</playerkits2.jar>
     </properties>
 
     <repositories>
@@ -23,83 +29,83 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>placeholderapi</id>
-            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
-        </repository>
-        <repository>
-            <id>enginehub-maven</id>
+            <id>enginehub</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
     </repositories>
 
     <dependencies>
-        <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>${paper.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Survival Core Addon API -->
-        <dependency>
-            <groupId>network.minespazio</groupId>
-            <artifactId>survival-core-addon-api</artifactId>
-            <version>0.9.14-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/survival-core-addon-api-0.9.14-SNAPSHOT.jar</systemPath>
-        </dependency>
-
-        <!-- PlayerKits2 Integration -->
-        <dependency>
-            <groupId>pk.ajneb97</groupId>
-            <artifactId>PlayerKits2</artifactId>
-            <version>1.21.2</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/PlayerKits2-1.21.2.jar</systemPath>
-        </dependency>
-
-        <!-- WorldEdit / FAWE -->
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
-            <version>7.3.0</version>
+            <version>${worldedit.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- PlaceholderAPI (Optional) -->
+        <dependency>
+            <groupId>net.md-5</groupId>
+            <artifactId>bungeecord-chat</artifactId>
+            <version>${bungeecord.chat.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>network.minespazio</groupId>
+            <artifactId>survival-core-api-runtime</artifactId>
+            <version>0.9.66-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${survival.core.jar}</systemPath>
+        </dependency>
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.6</version>
-            <scope>provided</scope>
+            <version>2.12.2</version>
+            <scope>system</scope>
+            <systemPath>${placeholderapi.jar}</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pk.ajneb97</groupId>
+            <artifactId>playerkits2</artifactId>
+            <version>1.21.2</version>
+            <scope>system</scope>
+            <systemPath>${playerkits2.jar}</systemPath>
         </dependency>
     </dependencies>
 
     <build>
-        <defaultGoal>clean package</defaultGoal>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.15.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <release>${java.version}</release>
+                    <release>${maven.compiler.release}</release>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <proc>none</proc>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
 </project>

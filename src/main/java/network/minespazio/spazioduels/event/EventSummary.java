@@ -1,12 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package network.minespazio.spazioduels.event;
-
-import network.minespazio.spazioduels.util.RewardUtil;
 
 import java.util.List;
 import java.util.UUID;
+import network.minespazio.spazioduels.util.RewardUtil;
 
 public class EventSummary {
-
     private final UUID eventId;
     private final String eventName;
     private final String modeName;
@@ -32,42 +33,43 @@ public class EventSummary {
     }
 
     public UUID getEventId() {
-        return eventId;
+        return this.eventId;
     }
 
     public String getEventName() {
-        return eventName;
+        return this.eventName;
     }
 
     public String getModeName() {
-        return modeName;
+        return this.modeName;
     }
 
     public String getKitName() {
-        return kitName;
+        return this.kitName;
     }
 
     public String getWinnerName() {
-        return winnerName;
+        return this.winnerName;
     }
 
     public String getWinnerTeamName() {
-        return winnerTeamName;
+        return this.winnerTeamName;
     }
 
     public List<RewardUtil.RewardItem> getRewards() {
-        return rewards;
+        return this.rewards;
     }
 
     public long getDurationSeconds() {
-        return durationSeconds;
+        return this.durationSeconds;
     }
 
     public int getTotalMatches() {
-        return totalMatches;
+        return this.totalMatches;
     }
 
     public int getTotalKills() {
-        return totalKills;
+        return this.totalKills;
     }
 }
+

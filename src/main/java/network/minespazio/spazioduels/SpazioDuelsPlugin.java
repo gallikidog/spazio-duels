@@ -1,10 +1,26 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.Bukkit
+ *  org.bukkit.command.CommandExecutor
+ *  org.bukkit.command.TabCompleter
+ *  org.bukkit.event.Listener
+ *  org.bukkit.plugin.Plugin
+ *  org.bukkit.plugin.java.JavaPlugin
+ */
 package network.minespazio.spazioduels;
 
+import java.util.HashSet;
 import network.minespazio.spazioduels.addon.SurvivalCoreAddonHook;
 import network.minespazio.spazioduels.antidupe.AntiDupeManager;
 import network.minespazio.spazioduels.antidupe.InventoryBackupManager;
 import network.minespazio.spazioduels.arena.ArenaManager;
-import network.minespazio.spazioduels.command.*;
+import network.minespazio.spazioduels.command.DuelCommand;
+import network.minespazio.spazioduels.command.DuelEventCommand;
+import network.minespazio.spazioduels.command.KothCommand;
+import network.minespazio.spazioduels.command.PartyCommand;
+import network.minespazio.spazioduels.command.SpazioDuelsAdminCommand;
 import network.minespazio.spazioduels.duel.DuelManager;
 import network.minespazio.spazioduels.duel.DuelMatch;
 import network.minespazio.spazioduels.event.DuelEventManager;
@@ -14,15 +30,21 @@ import network.minespazio.spazioduels.listener.AntiDupeListener;
 import network.minespazio.spazioduels.listener.GUIListener;
 import network.minespazio.spazioduels.listener.MatchListener;
 import network.minespazio.spazioduels.listener.ProtectionListener;
+import network.minespazio.spazioduels.listener.SoupPvPListener;
 import network.minespazio.spazioduels.party.PartyManager;
 import network.minespazio.spazioduels.placeholder.SpazioDuelsPlaceholderExpansion;
+import network.minespazio.spazioduels.pvp.PvP18Listener;
+import network.minespazio.spazioduels.pvp.PvP18Manager;
+import network.minespazio.spazioduels.scoreboard.ScoreboardManager;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashSet;
-
-public final class SpazioDuelsPlugin extends JavaPlugin {
-
+public final class SpazioDuelsPlugin
+extends JavaPlugin {
     private SurvivalCoreAddonHook addonHook;
     private KitManager kitManager;
     private ArenaManager arenaManager;
@@ -32,14 +54,12 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
     private DuelManager duelManager;
     private DuelEventManager duelEventManager;
     private KothManager kothManager;
-    private network.minespazio.spazioduels.scoreboard.ScoreboardManager scoreboardManager;
-    private network.minespazio.spazioduels.pvp.PvP18Manager pvp18Manager;
+    private ScoreboardManager scoreboardManager;
+    private PvP18Manager pvp18Manager;
 
-    @Override
     public void onEnable() {
-        saveDefaultConfig();
-
-        // Initialize managers
+        Object cmd;
+        this.saveDefaultConfig();
         this.kitManager = new KitManager(this);
         this.arenaManager = new ArenaManager(this);
         this.antiDupeManager = new AntiDupeManager(this);
@@ -48,122 +68,117 @@ public final class SpazioDuelsPlugin extends JavaPlugin {
         this.duelManager = new DuelManager(this);
         this.duelEventManager = new DuelEventManager(this);
         this.kothManager = new KothManager(this);
-        this.scoreboardManager = new network.minespazio.spazioduels.scoreboard.ScoreboardManager(this);
-        this.pvp18Manager = new network.minespazio.spazioduels.pvp.PvP18Manager(this);
-
-        // Register survival_core addon hook
+        this.scoreboardManager = new ScoreboardManager(this);
+        this.pvp18Manager = new PvP18Manager(this);
         this.addonHook = new SurvivalCoreAddonHook(this);
         this.addonHook.register();
-
-        // Register listeners
-        getServer().getPluginManager().registerEvents(new ProtectionListener(this), this);
-        getServer().getPluginManager().registerEvents(new MatchListener(this), this);
-        getServer().getPluginManager().registerEvents(new AntiDupeListener(this), this);
-        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
-        getServer().getPluginManager().registerEvents(new network.minespazio.spazioduels.pvp.PvP18Listener(this, pvp18Manager), this);
-
-        // Register commands
-        if (getCommand("duel") != null) {
-            DuelCommand cmd = new DuelCommand(this);
-            getCommand("duel").setExecutor(cmd);
-            getCommand("duel").setTabCompleter(cmd);
+        this.getServer().getPluginManager().registerEvents((Listener)new ProtectionListener(this), (Plugin)this);
+        this.getServer().getPluginManager().registerEvents((Listener)new MatchListener(this), (Plugin)this);
+        this.getServer().getPluginManager().registerEvents((Listener)new AntiDupeListener(this), (Plugin)this);
+        this.getServer().getPluginManager().registerEvents((Listener)new GUIListener(this), (Plugin)this);
+        this.getServer().getPluginManager().registerEvents((Listener)new PvP18Listener(this, this.pvp18Manager), (Plugin)this);
+        this.getServer().getPluginManager().registerEvents((Listener)new SoupPvPListener(this), (Plugin)this);
+        if (this.getCommand("duel") != null) {
+            cmd = new DuelCommand(this);
+            this.getCommand("duel").setExecutor((CommandExecutor)cmd);
+            this.getCommand("duel").setTabCompleter((TabCompleter)cmd);
         }
-        if (getCommand("duelevent") != null) {
-            DuelEventCommand cmd = new DuelEventCommand(this);
-            getCommand("duelevent").setExecutor(cmd);
-            getCommand("duelevent").setTabCompleter(cmd);
+        if (this.getCommand("duelevent") != null) {
+            cmd = new DuelEventCommand(this);
+            this.getCommand("duelevent").setExecutor((CommandExecutor)cmd);
+            this.getCommand("duelevent").setTabCompleter((TabCompleter)cmd);
         }
-        if (getCommand("spazioduels") != null) {
-            SpazioDuelsAdminCommand cmd = new SpazioDuelsAdminCommand(this);
-            getCommand("spazioduels").setExecutor(cmd);
-            getCommand("spazioduels").setTabCompleter(cmd);
+        if (this.getCommand("spazioduels") != null) {
+            cmd = new SpazioDuelsAdminCommand(this);
+            this.getCommand("spazioduels").setExecutor((CommandExecutor)cmd);
+            this.getCommand("spazioduels").setTabCompleter((TabCompleter)cmd);
         }
-        if (getCommand("koth") != null) {
-            KothCommand cmd = new KothCommand(this);
-            getCommand("koth").setExecutor(cmd);
-            getCommand("koth").setTabCompleter(cmd);
+        if (this.getCommand("koth") != null) {
+            cmd = new KothCommand(this);
+            this.getCommand("koth").setExecutor((CommandExecutor)cmd);
+            this.getCommand("koth").setTabCompleter((TabCompleter)cmd);
         }
-        if (getCommand("party") != null) {
-            PartyCommand cmd = new PartyCommand(this);
-            getCommand("party").setExecutor(cmd);
-            getCommand("party").setTabCompleter(cmd);
+        if (this.getCommand("party") != null) {
+            cmd = new PartyCommand(this);
+            this.getCommand("party").setExecutor((CommandExecutor)cmd);
+            this.getCommand("party").setTabCompleter((TabCompleter)cmd);
         }
-
-        // Register PlaceholderAPI expansion if available
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new SpazioDuelsPlaceholderExpansion(this).register();
-            getLogger().info("PlaceholderAPI Expansion para SpazioDuels registrada!");
+            this.getLogger().info("PlaceholderAPI Expansion para SpazioDuels registrada!");
         }
-
-        getLogger().info("SpazioDuels v" + getPluginMeta().getVersion() + " habilitado exitosamente.");
+        this.getLogger().info("SpazioDuels v" + this.getPluginMeta().getVersion() + " habilitado exitosamente.");
     }
 
-    @Override
     public void onDisable() {
-        // Force cleanup of any active matches
-        if (duelManager != null) {
-            for (DuelMatch match : new HashSet<>(duelManager.getActiveMatches())) {
+        if (this.duelManager != null) {
+            for (DuelMatch match : new HashSet<DuelMatch>(this.duelManager.getActiveMatches())) {
                 match.cleanupAndRestore();
             }
         }
-
-        if (kothManager != null) {
-            kothManager.stopActiveMatch();
+        if (this.kothManager != null) {
+            this.kothManager.stopActiveMatch();
         }
-
-        if (scoreboardManager != null) {
-            scoreboardManager.clearAllBoards();
+        if (this.scoreboardManager != null) {
+            this.scoreboardManager.clearAllBoards();
         }
-
-        // Unregister survival_core addon hook
-        if (addonHook != null) {
-            addonHook.unregister();
+        if (this.addonHook != null) {
+            this.addonHook.unregister();
         }
-
-        getLogger().info("SpazioDuels deshabilitado.");
+        this.getLogger().info("SpazioDuels deshabilitado.");
     }
 
     public SurvivalCoreAddonHook getAddonHook() {
-        return addonHook;
+        return this.addonHook;
     }
 
     public KitManager getKitManager() {
-        return kitManager;
+        return this.kitManager;
     }
 
     public ArenaManager getArenaManager() {
-        return arenaManager;
+        return this.arenaManager;
     }
 
     public AntiDupeManager getAntiDupeManager() {
-        return antiDupeManager;
+        return this.antiDupeManager;
     }
 
     public InventoryBackupManager getInventoryBackupManager() {
-        return inventoryBackupManager;
+        return this.inventoryBackupManager;
     }
 
     public PartyManager getPartyManager() {
-        return partyManager;
+        return this.partyManager;
     }
 
     public DuelManager getDuelManager() {
-        return duelManager;
+        return this.duelManager;
     }
 
     public DuelEventManager getDuelEventManager() {
-        return duelEventManager;
+        return this.duelEventManager;
     }
 
     public KothManager getKothManager() {
-        return kothManager;
+        return this.kothManager;
     }
 
-    public network.minespazio.spazioduels.scoreboard.ScoreboardManager getScoreboardManager() {
-        return scoreboardManager;
+    public ScoreboardManager getScoreboardManager() {
+        return this.scoreboardManager;
     }
 
-    public network.minespazio.spazioduels.pvp.PvP18Manager getPvP18Manager() {
-        return pvp18Manager;
+    public PvP18Manager getPvP18Manager() {
+        return this.pvp18Manager;
+    }
+
+    public void reloadDuelConfiguration() {
+        this.reloadConfig();
+        this.kitManager.loadKits();
+        this.arenaManager.loadArenas();
+        if (this.scoreboardManager != null) {
+            this.scoreboardManager.reloadConfig();
+        }
     }
 }
+

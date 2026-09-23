@@ -1,28 +1,57 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.kyori.adventure.text.Component
+ *  net.kyori.adventure.title.Title
+ *  net.kyori.adventure.title.Title$Times
+ *  org.bukkit.Bukkit
+ *  org.bukkit.Location
+ *  org.bukkit.command.CommandSender
+ *  org.bukkit.entity.Player
+ *  org.bukkit.inventory.ItemStack
+ *  org.bukkit.plugin.Plugin
+ *  org.bukkit.scheduler.BukkitRunnable
+ *  org.bukkit.scheduler.BukkitTask
+ */
 package network.minespazio.spazioduels.koth;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
+import network.minespazio.spazioduels.koth.CuboidRegion;
+import network.minespazio.spazioduels.koth.Koth;
+import network.minespazio.spazioduels.koth.KothCaptureSnapshot;
+import network.minespazio.spazioduels.koth.KothCommandReward;
 import network.minespazio.spazioduels.util.TextUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.time.Duration;
-import java.util.*;
-
 public class KothMatch {
-
     private final SpazioDuelsPlugin plugin;
     private final Koth koth;
-    private final Set<UUID> playersInOuterZone = new HashSet<>();
-    private Player currentCapper;
+    private final Set<UUID> playersInOuterZone = new HashSet<UUID>();
+    private UUID currentCapperId;
     private int remainingSeconds;
     private long captureEndTimestampMillis;
+    private long eventEndTimestampMillis;
     private boolean active;
     private BukkitTask task;
+    private KothCaptureSnapshot captureSnapshot = KothCaptureSnapshot.inactive();
 
     public KothMatch(SpazioDuelsPlugin plugin, Koth koth) {
         this.plugin = plugin;
@@ -33,178 +62,185 @@ public class KothMatch {
 
     public void start() {
         this.active = true;
-        this.remainingSeconds = koth.getCaptureDelaySeconds();
-        Bukkit.broadcast(TextUtil.toComponent("&e-------------------------------------------"));
-        Bukkit.broadcast(TextUtil.toComponent("              &6&lKOTH INICIADO"));
-        Bukkit.broadcast(TextUtil.toComponent("	 &fEl KOTH &b" + koth.getName() + " &fha comenzado!"));
-        Bukkit.broadcast(TextUtil.toComponent("	 &7Tiempo de captura: &e" + formatTime(remainingSeconds)));
-        Bukkit.broadcast(TextUtil.toComponent("&e-------------------------------------------"));
+        this.remainingSeconds = this.koth.getCaptureDelaySeconds();
+        int maxEventSeconds = Math.max(1, this.plugin.getConfig().getInt("koth.max_event_duration_seconds", 300));
+        this.eventEndTimestampMillis = System.currentTimeMillis() + (long)maxEventSeconds * 1000L;
+        this.refreshCaptureSnapshot();
+        Bukkit.broadcast((Component)TextUtil.toComponent("&e-------------------------------------------"));
+        Bukkit.broadcast((Component)TextUtil.toComponent("              &6&lKOTH INICIADO"));
+        Bukkit.broadcast((Component)TextUtil.toComponent("\t &fEl KOTH &b" + this.koth.getName() + " &fha comenzado!"));
+        Bukkit.broadcast((Component)TextUtil.toComponent("\t &7Tiempo de captura: &e" + this.formatTime(this.remainingSeconds)));
+        Bukkit.broadcast((Component)TextUtil.toComponent("&e-------------------------------------------"));
+        this.task = new BukkitRunnable(){
 
-        this.task = new BukkitRunnable() {
-            @Override
             public void run() {
-                if (!active) {
-                    cancel();
+                if (!KothMatch.this.active) {
+                    this.cancel();
                     return;
                 }
-                tick();
+                KothMatch.this.tick();
             }
-        }.runTaskTimer(plugin, 0L, 20L); // Ticks every 1 second
+        }.runTaskTimer((Plugin)this.plugin, 0L, 20L);
     }
 
     private void tick() {
-        // 1. Check outer zone entry for screen title (2 seconds duration)
-        CuboidRegion outerZone = koth.getZone() != null ? koth.getZone() : koth.getCapZone();
-        if (outerZone != null) {
-            Set<UUID> currentInZone = new HashSet<>();
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (outerZone.contains(player.getLocation())) {
-                    currentInZone.add(player.getUniqueId());
-                    if (!playersInOuterZone.contains(player.getUniqueId())) {
-                        // Display entry title for 2 seconds
-                        sendEntryTitle(player);
-                    }
+        if (System.currentTimeMillis() >= this.eventEndTimestampMillis) {
+            this.finishDueToTimeout();
+            return;
+        }
+        CuboidRegion outerZone = this.koth.getZone() != null ? this.koth.getZone() : this.koth.getCapZone();
+        CuboidRegion capZone = this.koth.getCapZone();
+        HashSet<UUID> currentInZone = outerZone == null ? null : new HashSet<UUID>();
+        Player capperCandidate = null;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Location location = player.getLocation();
+            UUID playerId = player.getUniqueId();
+            if (outerZone != null && outerZone.contains(location)) {
+                currentInZone.add(playerId);
+                if (!this.playersInOuterZone.contains(playerId)) {
+                    this.sendEntryTitle(player);
                 }
             }
-            playersInOuterZone.clear();
-            playersInOuterZone.addAll(currentInZone);
+            if (capperCandidate != null || capZone == null || player.isDead() || !capZone.contains(location)) continue;
+            capperCandidate = player;
         }
-
-        // 2. Check inner capture zone
-        CuboidRegion capZone = koth.getCapZone();
-        if (capZone == null) return;
-
-        List<Player> capperCandidates = new ArrayList<>();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.isOnline() && !p.isDead() && capZone.contains(p.getLocation())) {
-                capperCandidates.add(p);
-            }
+        if (currentInZone != null) {
+            this.playersInOuterZone.clear();
+            this.playersInOuterZone.addAll(currentInZone);
         }
-
-        if (currentCapper != null) {
-            // Verify if current capper is still inside cap zone
-            if (!currentCapper.isOnline() || currentCapper.isDead() || !capZone.contains(currentCapper.getLocation())) {
-                Bukkit.broadcast(TextUtil.toComponent("&c[KOTH] &e" + currentCapper.getName() + " &7ha perdido el control del KOTH &b" + koth.getName() + "&7."));
-                currentCapper = null;
-                remainingSeconds = koth.getCaptureDelaySeconds();
-                captureEndTimestampMillis = 0;
-            }
+        if (capZone == null) {
+            this.refreshCaptureSnapshot();
+            return;
         }
-
-        if (currentCapper == null && !capperCandidates.isEmpty()) {
-            currentCapper = capperCandidates.get(0);
-            remainingSeconds = koth.getCaptureDelaySeconds();
-            captureEndTimestampMillis = System.currentTimeMillis() + (remainingSeconds * 1000L);
-            Bukkit.broadcast(TextUtil.toComponent("&a[KOTH] &e" + currentCapper.getName() + " &7ha comenzado a capturar el KOTH &b" + koth.getName() + "&7!"));
+        Player currentCapper = this.getCurrentCapper();
+        if (!(currentCapper == null || currentCapper.isOnline() && !currentCapper.isDead() && capZone.contains(currentCapper.getLocation()))) {
+            Bukkit.broadcast((Component)TextUtil.toComponent("&c[KOTH] &e" + (currentCapper == null ? "El jugador" : currentCapper.getName()) + " &7ha perdido el control del KOTH &b" + this.koth.getName() + "&7."));
+            this.currentCapperId = null;
+            this.remainingSeconds = this.koth.getCaptureDelaySeconds();
+            this.captureEndTimestampMillis = 0L;
         }
-
-        if (currentCapper != null) {
-            remainingSeconds--;
-
-            // Actionbar update
-            String actionbarText = TextUtil.colorize("&eCapturando KOTH &b" + koth.getName() + " &7| &a" + currentCapper.getName() + " &7(" + formatTime(remainingSeconds) + ")");
+        if (this.currentCapperId == null && capperCandidate != null) {
+            this.currentCapperId = capperCandidate.getUniqueId();
+            this.remainingSeconds = this.koth.getCaptureDelaySeconds();
+            this.captureEndTimestampMillis = System.currentTimeMillis() + (long)this.remainingSeconds * 1000L;
+            Bukkit.broadcast((Component)TextUtil.toComponent("&a[KOTH] &e" + capperCandidate.getName() + " &7ha comenzado a capturar el KOTH &b" + this.koth.getName() + "&7!"));
+        }
+        if ((currentCapper = this.getCurrentCapper()) != null) {
+            --this.remainingSeconds;
+            String actionbarText = TextUtil.colorize("&eCapturando KOTH &b" + this.koth.getName() + " &7| &a" + currentCapper.getName() + " &7(" + this.formatTime(this.remainingSeconds) + ")");
             currentCapper.sendActionBar(TextUtil.toComponent(actionbarText));
-
-            if (remainingSeconds <= 0) {
-                finishMatch(currentCapper);
+            if (this.remainingSeconds <= 0) {
+                this.finishMatch(currentCapper);
+                return;
             }
         }
+        this.refreshCaptureSnapshot();
     }
 
     private void sendEntryTitle(Player player) {
-        String titleRaw = plugin.getConfig().getString("koth.zone_entry_title", "&6&lKOTH");
-        String subRaw = plugin.getConfig().getString("koth.zone_entry_subtitle", "&fIngresaste a la zona del Koth &b%koth%");
-        subRaw = subRaw.replace("%koth%", koth.getName());
-
+        String titleRaw = this.plugin.getConfig().getString("koth.zone_entry_title", "&6&lKOTH");
+        String subRaw = this.plugin.getConfig().getString("koth.zone_entry_subtitle", "&fIngresaste a la zona del Koth &b%koth%");
+        subRaw = subRaw.replace("%koth%", this.koth.getName());
         Component mainTitle = TextUtil.toComponent(titleRaw);
         Component subtitle = TextUtil.toComponent(subRaw);
-
-        // 2 seconds display duration (FadeIn: 0.2s, Stay: 1.6s, FadeOut: 0.2s)
-        Title title = Title.title(
-                mainTitle,
-                subtitle,
-                Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(1600), Duration.ofMillis(200))
-        );
+        Title title = Title.title((Component)mainTitle, (Component)subtitle, (Title.Times)Title.Times.times((Duration)Duration.ofMillis(200L), (Duration)Duration.ofMillis(1600L), (Duration)Duration.ofMillis(200L)));
         player.showTitle(title);
     }
 
     private void finishMatch(Player winner) {
-        active = false;
-        if (task != null) task.cancel();
-
-        // 1. Send winner title for 2 seconds
-        String winTitleRaw = plugin.getConfig().getString("koth.winner_title", "&a&l¡FELICITACIONES!");
-        String winSubRaw = plugin.getConfig().getString("koth.winner_subtitle", "&fCapturaste el Koth &b%koth%");
-        winSubRaw = winSubRaw.replace("%koth%", koth.getName());
-
-        Title victoryTitle = Title.title(
-                TextUtil.toComponent(winTitleRaw),
-                TextUtil.toComponent(winSubRaw),
-                Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(1600), Duration.ofMillis(200))
-        );
+        this.active = false;
+        this.currentCapperId = null;
+        this.playersInOuterZone.clear();
+        this.refreshCaptureSnapshot();
+        if (this.task != null) {
+            this.task.cancel();
+        }
+        String winTitleRaw = this.plugin.getConfig().getString("koth.winner_title", "&a&l\u00a1FELICITACIONES!");
+        String winSubRaw = this.plugin.getConfig().getString("koth.winner_subtitle", "&fCapturaste el Koth &b%koth%");
+        winSubRaw = winSubRaw.replace("%koth%", this.koth.getName());
+        Title victoryTitle = Title.title((Component)TextUtil.toComponent(winTitleRaw), (Component)TextUtil.toComponent(winSubRaw), (Title.Times)Title.Times.times((Duration)Duration.ofMillis(200L), (Duration)Duration.ofMillis(1600L), (Duration)Duration.ofMillis(200L)));
         winner.showTitle(victoryTitle);
-
-        // 2. Broadcast winner message in server chat
-        List<String> winBroadcast = plugin.getConfig().getStringList("koth.broadcast_win");
+        List<String> winBroadcast = this.plugin.getConfig().getStringList("koth.broadcast_win");
         if (winBroadcast == null || winBroadcast.isEmpty()) {
-            winBroadcast = Arrays.asList(
-                    "&e-------------------------------------------",
-                    "              &6&lKOTH CAPTURADO",
-                    "",
-                    "	 &fEl jugador &b%player% &fha capturado el KOTH &e%koth%&f!",
-                    "",
-                    "&e-------------------------------------------"
-            );
+            winBroadcast = Arrays.asList("&e-------------------------------------------", "              &6&lKOTH CAPTURADO", "", "\t &fEl jugador &b%player% &fha capturado el KOTH &e%koth%&f!", "", "&e-------------------------------------------");
         }
-
         for (String line : winBroadcast) {
-            String formatted = line.replace("%player%", winner.getName()).replace("%koth%", koth.getName());
-            Bukkit.broadcast(TextUtil.toComponent(formatted));
+            String formatted = line.replace("%player%", winner.getName()).replace("%koth%", this.koth.getName());
+            Bukkit.broadcast((Component)TextUtil.toComponent(formatted));
         }
-
-        // 3. Give loot to winner
-        if (koth.getLootItems() != null && !koth.getLootItems().isEmpty()) {
-            for (ItemStack loot : koth.getLootItems()) {
-                if (loot != null && !loot.getType().isAir()) {
-                    HashMap<Integer, ItemStack> leftover = winner.getInventory().addItem(loot.clone());
-                    for (ItemStack item : leftover.values()) {
-                        winner.getWorld().dropItemNaturally(winner.getLocation(), item);
-                    }
+        if (this.koth.getLootItems() != null && !this.koth.getLootItems().isEmpty()) {
+            for (ItemStack loot : this.koth.getLootItems()) {
+                if (loot == null || loot.getType().isAir()) continue;
+                HashMap<Integer, ItemStack> leftover = winner.getInventory().addItem(new ItemStack[]{loot.clone()});
+                for (ItemStack item : leftover.values()) {
+                    winner.getWorld().dropItemNaturally(winner.getLocation(), item);
                 }
             }
-            winner.sendMessage(TextUtil.colorize("&a¡Has recibido la recompensa del KOTH " + koth.getName() + "!"));
+            winner.sendMessage(TextUtil.colorize("&a\u00a1Has recibido la recompensa del KOTH " + this.koth.getName() + "!"));
         }
+        this.executeCommandRewards(winner);
+        this.plugin.getKothManager().stopActiveMatch();
+    }
 
-        plugin.getKothManager().stopActiveMatch();
+    private void finishDueToTimeout() {
+        this.active = false;
+        this.currentCapperId = null;
+        this.playersInOuterZone.clear();
+        this.refreshCaptureSnapshot();
+        if (this.task != null) {
+            this.task.cancel();
+        }
+        Bukkit.broadcast((Component)TextUtil.toComponent("&c[KOTH] El KOTH &b" + this.koth.getName() + " &cfinalizo porque alcanzo el limite de tiempo."));
+        this.plugin.getKothManager().stopActiveMatch();
     }
 
     public void stopManually() {
-        active = false;
-        if (task != null) task.cancel();
-        Bukkit.broadcast(TextUtil.toComponent("&c[KOTH] El KOTH &b" + koth.getName() + " &cha sido detenido por un administrador."));
+        this.active = false;
+        this.currentCapperId = null;
+        this.playersInOuterZone.clear();
+        this.refreshCaptureSnapshot();
+        if (this.task != null) {
+            this.task.cancel();
+        }
+        Bukkit.broadcast((Component)TextUtil.toComponent("&c[KOTH] El KOTH &b" + this.koth.getName() + " &cha sido detenido por un administrador."));
     }
 
     public Koth getKoth() {
-        return koth;
+        return this.koth;
     }
 
     public Player getCurrentCapper() {
-        return currentCapper;
+        return this.currentCapperId == null ? null : Bukkit.getPlayer((UUID)this.currentCapperId);
     }
 
     public int getRemainingSeconds() {
-        return remainingSeconds;
+        return this.remainingSeconds;
     }
 
     public boolean isActive() {
-        return active;
+        return this.active;
+    }
+
+    public KothCaptureSnapshot getCaptureSnapshot() {
+        return this.captureSnapshot;
     }
 
     public long getRemainingMillis() {
-        if (currentCapper == null || captureEndTimestampMillis <= 0) {
-            return remainingSeconds * 1000L;
+        if (this.currentCapperId == null || this.captureEndTimestampMillis <= 0L) {
+            return (long)this.remainingSeconds * 1000L;
         }
-        return Math.max(0L, captureEndTimestampMillis - System.currentTimeMillis());
+        return Math.max(0L, this.captureEndTimestampMillis - System.currentTimeMillis());
+    }
+
+    public int getEventRemainingSeconds() {
+        if (!this.active || this.eventEndTimestampMillis <= 0L) {
+            return 0;
+        }
+        return (int)Math.max(0L, (this.eventEndTimestampMillis - System.currentTimeMillis()) / 1000L);
+    }
+
+    public String formatEventTimeLeft() {
+        return this.formatTime(this.getEventRemainingSeconds());
     }
 
     public String formatTime(int totalSecs) {
@@ -214,11 +250,63 @@ public class KothMatch {
     }
 
     public String formatTimeMillis() {
-        long totalMillis = getRemainingMillis();
-        long totalSecs = totalMillis / 1000;
-        long minutes = totalSecs / 60;
-        long seconds = totalSecs % 60;
-        long tenths = (totalMillis % 1000) / 100;
+        long totalMillis = this.getRemainingMillis();
+        long totalSecs = totalMillis / 1000L;
+        long minutes = totalSecs / 60L;
+        long seconds = totalSecs % 60L;
+        long tenths = totalMillis % 1000L / 100L;
         return String.format("%02d:%02d.%d", minutes, seconds, tenths);
     }
+
+    private void executeCommandRewards(Player winner) {
+        for (KothCommandReward reward : this.koth.getCommandRewards()) {
+            if (!reward.guaranteed()) continue;
+            this.executeCommandReward(winner, reward.command());
+        }
+        double roll = ThreadLocalRandom.current().nextDouble(100.0);
+        double accumulated = 0.0;
+        for (KothCommandReward reward : this.koth.getCommandRewards()) {
+            if (reward.guaranteed() || !(roll < (accumulated += reward.chance()))) continue;
+            this.executeCommandReward(winner, reward.command());
+            return;
+        }
+    }
+
+    private void executeCommandReward(Player winner, String command) {
+        if (command == null || command.isBlank()) {
+            return;
+        }
+        String resolved = command.replace("%player_name%", winner.getName()).replace("%player%", winner.getName()).replace("%player_uuid%", winner.getUniqueId().toString()).replace("%uuid%", winner.getUniqueId().toString()).replace("%koth%", this.koth.getName());
+        try {
+            if (!Bukkit.dispatchCommand((CommandSender)Bukkit.getConsoleSender(), (String)resolved)) {
+                this.plugin.getLogger().warning("No se encontro el comando de recompensa KOTH: " + resolved);
+            }
+        }
+        catch (RuntimeException exception) {
+            this.plugin.getLogger().warning("No se pudo ejecutar la recompensa KOTH '" + resolved + "': " + exception.getMessage());
+        }
+    }
+
+    private void refreshCaptureSnapshot() {
+        if (!this.active) {
+            this.captureSnapshot = KothCaptureSnapshot.inactive();
+            return;
+        }
+        Player capper = this.getCurrentCapper();
+        boolean capturing = capper != null;
+        int duration = Math.max(1, this.koth.getCaptureDelaySeconds());
+        int remaining = Math.max(0, this.remainingSeconds);
+        int progress = capturing ? Math.max(0, Math.min(100, (int)((long)(duration - remaining) * 100L / (long)duration))) : 0;
+        int width = Math.max(1, Math.min(50, this.plugin.getConfig().getInt("koth.placeholders.progress_bar.width", 20)));
+        String filled = this.getProgressSymbol("koth.placeholders.progress_bar.filled", "&a|");
+        String empty = this.getProgressSymbol("koth.placeholders.progress_bar.empty", "&7|");
+        int filledUnits = progress * width / 100;
+        this.captureSnapshot = new KothCaptureSnapshot(true, this.koth.getName(), capturing ? capper.getName() : "Nadie", remaining, progress, filled.repeat(filledUnits) + empty.repeat(width - filledUnits), capturing ? "CAPTURANDO" : "ESPERANDO");
+    }
+
+    private String getProgressSymbol(String path, String fallback) {
+        String symbol = this.plugin.getConfig().getString(path);
+        return symbol == null || symbol.isEmpty() ? fallback : symbol;
+    }
 }
+

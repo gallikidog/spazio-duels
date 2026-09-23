@@ -1,5 +1,5 @@
 name: SpazioDuels
-version: '${project.version}'
+version: '1.2.9'
 main: network.minespazio.spazioduels.SpazioDuelsPlugin
 api-version: '1.21'
 description: Plugin modular de duelos y KOTH para survival_core
@@ -16,7 +16,7 @@ commands:
   duel:
     description: Comando principal de duelos
     aliases: [duelo, duels]
-    usage: /duel <jugador|accept|deny|forfeit|toggle|kit>
+    usage: /duel <jugador|accept|deny|forfeit|reload>
   duelevent:
     description: Gestiona eventos automaticos de duelos
     aliases: [eventoduel, devent]
@@ -30,9 +30,16 @@ commands:
   koth:
     description: Comando de administracion y control de KOTH (King Of The Hill)
     aliases: [kingofthehill]
-    permission: spazioduels.admin.koth
-    usage: /koth <create|setcapdelay|setloot|setzone|setcapzone|start|stop|list|info>
+    usage: /koth <create|delete|setcapdelay|setloot|addcommandreward|removecommandreward|listcommandrewards|setzone|setcapzone|move|start|stop|reload|list|info>
   party:
     description: Sistema de party/equipo para duelos
     aliases: [p, equipo, team]
     usage: /party <create|invite|accept|leave|disband|kick|info>
+
+permissions:
+  spazioduels.admin:
+    default: op
+  spazioduels.admin.event:
+    default: op
+  spazioduels.admin.koth:
+    default: op

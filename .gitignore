@@ -1,5 +1,6 @@
 target/
 .idea/
 *.iml
-*.log
-.gemini/
+libs/*.jar
+!libs/README.md
+

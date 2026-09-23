@@ -1,12 +1,18 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.entity.Player
+ *  org.bukkit.inventory.ItemStack
+ */
 package network.minespazio.spazioduels.duel;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class HandicapRule {
-
     private boolean removeHelmet;
-    private double healthModifier; // e.g. 0.8 for 80% health
+    private double healthModifier;
 
     public HandicapRule() {
         this.removeHelmet = true;
@@ -19,26 +25,25 @@ public class HandicapRule {
     }
 
     public void applyHandicap(Player player) {
-        if (player == null || !player.isOnline()) return;
-
-        if (removeHelmet) {
-            ItemStack helmet = player.getInventory().getHelmet();
-            if (helmet != null) {
-                player.getInventory().setHelmet(null);
-            }
+        ItemStack helmet;
+        if (player == null || !player.isOnline()) {
+            return;
         }
-
-        if (healthModifier > 0 && healthModifier < 1.0) {
-            double newHealth = player.getMaxHealth() * healthModifier;
+        if (this.removeHelmet && (helmet = player.getInventory().getHelmet()) != null) {
+            player.getInventory().setHelmet(null);
+        }
+        if (this.healthModifier > 0.0 && this.healthModifier < 1.0) {
+            double newHealth = player.getMaxHealth() * this.healthModifier;
             player.setHealth(Math.min(player.getHealth(), newHealth));
         }
     }
 
     public boolean isRemoveHelmet() {
-        return removeHelmet;
+        return this.removeHelmet;
     }
 
     public double getHealthModifier() {
-        return healthModifier;
+        return this.healthModifier;
     }
 }
+

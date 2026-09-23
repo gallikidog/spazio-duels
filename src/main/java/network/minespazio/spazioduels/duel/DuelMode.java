@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package network.minespazio.spazioduels.duel;
 
 public enum DuelMode {
@@ -14,7 +17,7 @@ public enum DuelMode {
     private final int team2Size;
     private final boolean handicap;
 
-    DuelMode(String displayName, int team1Size, int team2Size, boolean handicap) {
+    private DuelMode(String displayName, int team1Size, int team2Size, boolean handicap) {
         this.displayName = displayName;
         this.team1Size = team1Size;
         this.team2Size = team2Size;
@@ -22,28 +25,30 @@ public enum DuelMode {
     }
 
     public String getDisplayName() {
-        return displayName;
+        return this.displayName;
     }
 
     public int getTeam1Size() {
-        return team1Size;
+        return this.team1Size;
     }
 
     public int getTeam2Size() {
-        return team2Size;
+        return this.team2Size;
     }
 
     public boolean isHandicap() {
-        return handicap;
+        return this.handicap;
     }
 
     public static DuelMode fromString(String str) {
-        if (str == null) return SOLO_1V1;
-        for (DuelMode mode : values()) {
-            if (mode.name().equalsIgnoreCase(str) || mode.getDisplayName().equalsIgnoreCase(str) || mode.name().replace("_", "").equalsIgnoreCase(str)) {
-                return mode;
-            }
+        if (str == null) {
+            return SOLO_1V1;
+        }
+        for (DuelMode mode : DuelMode.values()) {
+            if (!mode.name().equalsIgnoreCase(str) && !mode.getDisplayName().equalsIgnoreCase(str) && !mode.name().replace("_", "").equalsIgnoreCase(str)) continue;
+            return mode;
         }
         return SOLO_1V1;
     }
 }
+

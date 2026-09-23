@@ -1,138 +1,196 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.Bukkit
+ *  org.bukkit.GameMode
+ *  org.bukkit.Location
+ *  org.bukkit.World
+ *  org.bukkit.configuration.file.YamlConfiguration
+ *  org.bukkit.entity.Player
+ *  org.bukkit.inventory.ItemStack
+ *  org.bukkit.potion.PotionEffect
+ */
 package network.minespazio.spazioduels.antidupe;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
-
 public class InventoryBackupManager {
-
     private final SpazioDuelsPlugin plugin;
     private final File backupDir;
 
     public InventoryBackupManager(SpazioDuelsPlugin plugin) {
         this.plugin = plugin;
         this.backupDir = new File(plugin.getDataFolder(), "data" + File.separator + "inventories");
-        if (!backupDir.exists()) {
-            backupDir.mkdirs();
+        if (!this.backupDir.exists()) {
+            this.backupDir.mkdirs();
         }
     }
 
     public void saveBackup(Player player) {
-        if (player == null) return;
+        if (player == null) {
+            return;
+        }
         UUID uuid = player.getUniqueId();
-        File file = new File(backupDir, uuid.toString() + ".yml");
+        File file = new File(this.backupDir, uuid.toString() + ".yml");
         YamlConfiguration config = new YamlConfiguration();
-
-        config.set("uuid", uuid.toString());
-        config.set("name", player.getName());
-        config.set("contents", player.getInventory().getStorageContents());
-        config.set("armor", player.getInventory().getArmorContents());
-        config.set("offhand", player.getInventory().getItemInOffHand());
-        config.set("effects", player.getActivePotionEffects());
-        config.set("health", player.getHealth());
-        config.set("food", player.getFoodLevel());
-        config.set("exp", player.getExp());
-        config.set("level", player.getLevel());
-        config.set("gamemode", player.getGameMode().name());
-        config.set("allow_flight", player.getAllowFlight());
-        config.set("flying", player.isFlying());
-
+        config.set("uuid", (Object)uuid.toString());
+        config.set("name", (Object)player.getName());
+        config.set("contents", (Object)player.getInventory().getStorageContents());
+        config.set("armor", (Object)player.getInventory().getArmorContents());
+        config.set("offhand", (Object)player.getInventory().getItemInOffHand());
+        config.set("effects", (Object)player.getActivePotionEffects());
+        config.set("health", (Object)player.getHealth());
+        config.set("food", (Object)player.getFoodLevel());
+        config.set("exp", (Object)Float.valueOf(player.getExp()));
+        config.set("level", (Object)player.getLevel());
+        config.set("gamemode", (Object)player.getGameMode().name());
+        config.set("allow_flight", (Object)player.getAllowFlight());
+        config.set("flying", (Object)player.isFlying());
         Location loc = player.getLocation();
         if (loc != null && loc.getWorld() != null) {
-            config.set("location.world", loc.getWorld().getName());
-            config.set("location.x", loc.getX());
-            config.set("location.y", loc.getY());
-            config.set("location.z", loc.getZ());
-            config.set("location.yaw", loc.getYaw());
-            config.set("location.pitch", loc.getPitch());
+            config.set("location.world", (Object)loc.getWorld().getName());
+            config.set("location.x", (Object)loc.getX());
+            config.set("location.y", (Object)loc.getY());
+            config.set("location.z", (Object)loc.getZ());
+            config.set("location.yaw", (Object)Float.valueOf(loc.getYaw()));
+            config.set("location.pitch", (Object)Float.valueOf(loc.getPitch()));
         }
-
         try {
             config.save(file);
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error al guardar el respaldo de inventario para " + player.getName(), e);
+        }
+        catch (IOException e) {
+            this.plugin.getLogger().log(Level.SEVERE, "Error al guardar el respaldo de inventario para " + player.getName(), e);
         }
     }
 
     public boolean restoreBackup(Player player) {
-        if (player == null) return false;
+        if (player == null) {
+            return false;
+        }
         UUID uuid = player.getUniqueId();
-        File file = new File(backupDir, uuid.toString() + ".yml");
-        if (!file.exists()) return false;
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
+        File file = new File(this.backupDir, uuid.toString() + ".yml");
+        if (!file.exists()) {
+            return false;
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration((File)file);
         try {
-            // Clear current inventory and active potion effects
+            List effectsList;
+            ItemStack offhand;
+            List armorList;
+            ItemStack is;
+            Object itemObj;
+            int i;
             player.getInventory().clear();
             player.getInventory().setArmorContents(new ItemStack[4]);
             player.getInventory().setItemInOffHand(null);
             for (PotionEffect effect : player.getActivePotionEffects()) {
                 player.removePotionEffect(effect.getType());
             }
-
-            List<?> contentsList = config.getList("contents");
+            List contentsList = config.getList("contents");
             if (contentsList != null) {
-                player.getInventory().setStorageContents(contentsList.toArray(new ItemStack[0]));
+                ItemStack[] contents = new ItemStack[36];
+                for (i = 0; i < Math.min(contentsList.size(), 36); ++i) {
+                    itemObj = contentsList.get(i);
+                    if (!(itemObj instanceof ItemStack)) continue;
+                    contents[i] = is = (ItemStack)itemObj;
+                }
+                player.getInventory().setStorageContents(contents);
             }
-
-            List<?> armorList = config.getList("armor");
-            if (armorList != null) {
-                player.getInventory().setArmorContents(armorList.toArray(new ItemStack[0]));
+            if ((armorList = config.getList("armor")) != null) {
+                ItemStack[] armor = new ItemStack[4];
+                for (i = 0; i < Math.min(armorList.size(), 4); ++i) {
+                    itemObj = armorList.get(i);
+                    if (!(itemObj instanceof ItemStack)) continue;
+                    is = (ItemStack)itemObj;
+                    armor[i] = is;
+                }
+                player.getInventory().setArmorContents(armor);
             }
-
-            ItemStack offhand = config.getItemStack("offhand");
-            if (offhand != null) {
+            if ((offhand = config.getItemStack("offhand")) != null) {
                 player.getInventory().setItemInOffHand(offhand);
             }
-
-            List<?> effectsList = config.getList("effects");
-            if (effectsList != null) {
+            if ((effectsList = config.getList("effects")) != null) {
                 for (Object obj : effectsList) {
-                    if (obj instanceof PotionEffect effect) {
+                    if (obj instanceof PotionEffect) {
+                        PotionEffect effect = (PotionEffect)obj;
                         player.addPotionEffect(effect);
+                        continue;
                     }
+                    if (!(obj instanceof Map)) continue;
+                    Map map = (Map)obj;
+                    try {
+                        Map castMap = map;
+                        player.addPotionEffect(new PotionEffect(castMap));
+                    }
+                    catch (Exception exception) {}
                 }
             }
-
             double health = config.getDouble("health", 20.0);
             player.setHealth(Math.min(health, player.getMaxHealth()));
-
             player.setFoodLevel(config.getInt("food", 20));
-            player.setExp((float) config.getDouble("exp", 0.0));
+            player.setExp((float)config.getDouble("exp", 0.0));
             player.setLevel(config.getInt("level", 0));
-
             String gm = config.getString("gamemode", "SURVIVAL");
             try {
-                player.setGameMode(GameMode.valueOf(gm));
-            } catch (Exception ignored) {}
-
+                player.setGameMode(GameMode.valueOf((String)gm));
+            }
+            catch (Exception exception) {
+                // empty catch block
+            }
             player.setAllowFlight(config.getBoolean("allow_flight", false));
             player.setFlying(config.getBoolean("flying", false));
-
-            file.delete(); // Remove backup once successfully restored
+            file.delete();
             return true;
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error al restaurar respaldo para " + player.getName(), e);
+        }
+        catch (Exception e) {
+            this.plugin.getLogger().log(Level.SEVERE, "Error al restaurar respaldo para " + player.getName(), e);
             return false;
         }
     }
 
     public boolean hasBackup(Player player) {
-        if (player == null) return false;
-        File file = new File(backupDir, player.getUniqueId().toString() + ".yml");
+        if (player == null) {
+            return false;
+        }
+        File file = new File(this.backupDir, player.getUniqueId().toString() + ".yml");
         return file.exists();
     }
+
+    public Location getSavedLocation(Player player) {
+        String wName;
+        World w;
+        if (player == null) {
+            return null;
+        }
+        File file = new File(this.backupDir, player.getUniqueId().toString() + ".yml");
+        if (!file.exists()) {
+            return null;
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration((File)file);
+        if (config.contains("location.world") && (w = Bukkit.getWorld((String)(wName = config.getString("location.world")))) != null) {
+            double x = config.getDouble("location.x");
+            double y = config.getDouble("location.y");
+            double z = config.getDouble("location.z");
+            float yaw = (float)config.getDouble("location.yaw");
+            float pitch = (float)config.getDouble("location.pitch");
+            return new Location(w, x, y, z, yaw, pitch);
+        }
+        return null;
+    }
 }
+

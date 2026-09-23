@@ -1,7 +1,9 @@
 # Configuration file for SpazioDuels Scoreboards
 scoreboard:
   enabled: true
-  update_ticks: 2 # Update rate in server ticks (2 ticks = 100ms for smooth timer update)
+  update_ticks: 2 # Legacy alias used when active_update_ticks is not present
+  reconciliation_ticks: 20 # Full player scan; keep near 20 ticks for low server cost
+  active_update_ticks: 5 # Refresh only active duel/KOTH/event boards; set 2 for the smoothest timer
 
   # ======================================================
   # KOTH SCOREBOARD (Estilo HCF)

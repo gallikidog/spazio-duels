@@ -1,13 +1,18 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.entity.Player
+ */
 package network.minespazio.spazioduels.duel;
-
-import network.minespazio.spazioduels.kit.Kit;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
+import network.minespazio.spazioduels.duel.DuelMode;
+import network.minespazio.spazioduels.kit.Kit;
+import org.bukkit.entity.Player;
 
 public class DuelRequest {
-
     private final UUID sender;
     private final UUID target;
     private final List<Player> team1;
@@ -27,30 +32,31 @@ public class DuelRequest {
     }
 
     public UUID getSender() {
-        return sender;
+        return this.sender;
     }
 
     public UUID getTarget() {
-        return target;
+        return this.target;
     }
 
     public List<Player> getTeam1() {
-        return team1;
+        return this.team1;
     }
 
     public List<Player> getTeam2() {
-        return team2;
+        return this.team2;
     }
 
     public Kit getKit() {
-        return kit;
+        return this.kit;
     }
 
     public DuelMode getMode() {
-        return mode;
+        return this.mode;
     }
 
     public boolean isExpired() {
-        return System.currentTimeMillis() - createdAt > 60000; // 60s expiration
+        return System.currentTimeMillis() - this.createdAt > 60000L;
     }
 }
+

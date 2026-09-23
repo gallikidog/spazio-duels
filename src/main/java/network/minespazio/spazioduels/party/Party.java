@@ -1,16 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.Bukkit
+ *  org.bukkit.OfflinePlayer
+ *  org.bukkit.entity.Player
+ */
 package network.minespazio.spazioduels.party;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.*;
-
 public class Party {
-
     private final UUID id;
     private UUID leader;
-    private final Set<UUID> members = new HashSet<>();
-    private final Set<UUID> pendingInvites = new HashSet<>();
+    private final Set<UUID> members = new HashSet<UUID>();
+    private final Set<UUID> pendingInvites = new HashSet<UUID>();
 
     public Party(Player leader) {
         this.id = UUID.randomUUID();
@@ -19,11 +30,11 @@ public class Party {
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
 
     public UUID getLeader() {
-        return leader;
+        return this.leader;
     }
 
     public void setLeader(UUID leader) {
@@ -31,67 +42,66 @@ public class Party {
     }
 
     public Set<UUID> getMembers() {
-        return members;
+        return this.members;
     }
 
     public List<Player> getOnlinePlayers() {
-        List<Player> players = new ArrayList<>();
-        for (UUID uuid : members) {
-            Player p = Bukkit.getPlayer(uuid);
-            if (p != null && p.isOnline()) {
-                players.add(p);
-            }
+        ArrayList<Player> players = new ArrayList<Player>();
+        for (UUID uuid : this.members) {
+            Player p = Bukkit.getPlayer((UUID)uuid);
+            if (p == null || !p.isOnline()) continue;
+            players.add(p);
         }
         return players;
     }
 
     public boolean addMember(Player player) {
-        pendingInvites.remove(player.getUniqueId());
-        return members.add(player.getUniqueId());
+        this.pendingInvites.remove(player.getUniqueId());
+        return this.members.add(player.getUniqueId());
     }
 
     public boolean removeMember(UUID uuid) {
-        boolean removed = members.remove(uuid);
-        if (removed && leader.equals(uuid) && !members.isEmpty()) {
-            leader = members.iterator().next(); // Transfer leadership
+        boolean removed = this.members.remove(uuid);
+        if (removed && this.leader.equals(uuid) && !this.members.isEmpty()) {
+            this.leader = this.members.iterator().next();
         }
         return removed;
     }
 
     public boolean isMember(UUID uuid) {
-        return members.contains(uuid);
+        return this.members.contains(uuid);
     }
 
     public boolean isLeader(UUID uuid) {
-        return leader.equals(uuid);
+        return this.leader.equals(uuid);
     }
 
     public void invite(Player player) {
-        pendingInvites.add(player.getUniqueId());
+        this.pendingInvites.add(player.getUniqueId());
     }
 
     public boolean hasInvite(UUID uuid) {
-        return pendingInvites.contains(uuid);
+        return this.pendingInvites.contains(uuid);
     }
 
     public String getFormattedMembers() {
-        List<String> names = new ArrayList<>();
-        for (UUID uuid : members) {
-            org.bukkit.OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
-            if (p.getName() != null) {
-                names.add(p.getName());
-            }
+        ArrayList<String> names = new ArrayList<String>();
+        for (UUID uuid : this.members) {
+            OfflinePlayer p = Bukkit.getOfflinePlayer((UUID)uuid);
+            if (p.getName() == null) continue;
+            names.add(p.getName());
         }
-        return String.join(", ", names);
+        return String.join((CharSequence)", ", names);
     }
 
     public void broadcast(String message) {
-        for (Player p : getOnlinePlayers()) {
+        for (Player p : this.getOnlinePlayers()) {
             p.sendMessage(message);
         }
     }
 
     public int getSize() {
-        return members.size();
+        return this.members.size();
     }
 }
+

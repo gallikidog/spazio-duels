@@ -45,6 +45,13 @@ protection:
   rollback_placed_blocks: true
 
 event:
+  # Inicia de inmediato al llenarse el cupo.
+  auto_start_on_full: true
+  # 0 usa el cupo natural del modo: 1v1=2, 2v2=4, 3v3=6, etc.
+  # Usa un valor mayor para torneos con mas participantes.
+  max_participants: 0
+  # Limite total para torneos iniciados por duel_event_autostart.
+  automatic_max_duration_seconds: 300
   # Tiempo de espera en segundos para que los jugadores se unan al evento antes de iniciar
   lobby_countdown: 45
 
@@ -88,6 +95,15 @@ event:
 # Hosteo automatico de eventos/torneos de duelos durante el dia
 duel_event_autostart:
   enabled: true
+  # Horarios diarios. Si esta lista tiene horas, interval_minutes se ignora.
+  # Usa el formato HH:mm y deja la lista vacia para volver al intervalo.
+  activation_times:
+    - "13:20"
+    - "15:20"
+    - "17:20"
+    - "19:20"
+    - "21:20"
+    - "23:20"
   interval_minutes: 90
   modes_pool:
     - "1v1"
@@ -99,6 +115,8 @@ duel_event_autostart:
 
 # Configuración del Sistema KOTH (King Of The Hill)
 koth:
+  # Finaliza el KOTH sin ganador al alcanzar este limite.
+  max_event_duration_seconds: 300
   # Titulo de entrada a la zona del KOTH
   zone_entry_title: "&6&lKOTH"
   zone_entry_subtitle: "&fIngresaste a la zona del Koth &b%koth%"
@@ -116,6 +134,12 @@ koth:
     - "	 &7¡Ha recibido el botín de victoria!"
     - ""
     - "&e-------------------------------------------"
+
+  placeholders:
+    progress_bar:
+      width: 20
+      filled: "&a|"
+      empty: "&7|"
 
 # Hosteo automatico de KOTHs durante el dia
 koth_autostart:

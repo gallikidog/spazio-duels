@@ -1,23 +1,49 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.kyori.adventure.text.Component
+ *  org.bukkit.Bukkit
+ *  org.bukkit.GameMode
+ *  org.bukkit.Location
+ *  org.bukkit.Sound
+ *  org.bukkit.World
+ *  org.bukkit.entity.Player
+ *  org.bukkit.inventory.ItemStack
+ *  org.bukkit.plugin.Plugin
+ *  org.bukkit.potion.PotionEffect
+ *  org.bukkit.scheduler.BukkitRunnable
+ *  org.bukkit.scheduler.BukkitTask
+ */
 package network.minespazio.spazioduels.duel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
 import network.minespazio.spazioduels.arena.Arena;
 import network.minespazio.spazioduels.arena.ArenaState;
+import network.minespazio.spazioduels.duel.DuelMode;
+import network.minespazio.spazioduels.duel.DuelTeam;
+import network.minespazio.spazioduels.duel.HandicapRule;
 import network.minespazio.spazioduels.kit.Kit;
 import network.minespazio.spazioduels.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
-
 public class DuelMatch {
-
     private final UUID matchId;
     private final SpazioDuelsPlugin plugin;
     private final Arena arena;
@@ -26,7 +52,6 @@ public class DuelMatch {
     private final DuelTeam team1;
     private final DuelTeam team2;
     private final HandicapRule handicapRule;
-
     private boolean countingDown;
     private boolean started;
     private boolean finished;
@@ -34,8 +59,7 @@ public class DuelMatch {
     private BukkitTask timerTask;
     private long startTime;
     private long endTime;
-
-    private final Map<UUID, org.bukkit.Location> preDuelLocations = new HashMap<>();
+    private final Map<UUID, Location> preDuelLocations = new HashMap<UUID, Location>();
     private DuelTeam winner;
 
     public DuelMatch(SpazioDuelsPlugin plugin, Arena arena, Kit kit, DuelMode mode, DuelTeam team1, DuelTeam team2, HandicapRule handicapRule) {
@@ -47,92 +71,104 @@ public class DuelMatch {
         this.team1 = team1;
         this.team2 = team2;
         this.handicapRule = handicapRule;
-        this.remainingSeconds = arena.getMaxDurationSeconds() > 0 ? arena.getMaxDurationSeconds() : 600; // Default 10 min
+        this.remainingSeconds = arena.getMaxDurationSeconds() > 0 ? arena.getMaxDurationSeconds() : 600;
         this.arena.setState(ArenaState.BUSY);
     }
 
     public void startMatchSequence() {
-        countingDown = true;
-
-        // Backup inventories & setup players
-        setupTeam(team1, arena.getSpawn1());
-        setupTeam(team2, arena.getSpawn2());
-
-        // Apply handicap if applicable
-        if (mode.isHandicap() && handicapRule != null) {
-            // Apply handicap to majority team (team with more members)
-            DuelTeam majority = team1.getMembers().size() > team2.getMembers().size() ? team1 : team2;
+        this.countingDown = true;
+        this.setupTeam(this.team1, this.arena.getSpawn1());
+        this.setupTeam(this.team2, this.arena.getSpawn2());
+        if (this.mode.isHandicap() && this.handicapRule != null) {
+            DuelTeam majority = this.team1.getMembers().size() > this.team2.getMembers().size() ? this.team1 : this.team2;
             for (Player p : majority.getOnlinePlayers()) {
-                handicapRule.applyHandicap(p);
+                this.handicapRule.applyHandicap(p);
             }
         }
-
-        // 5 second Countdown
-        new BukkitRunnable() {
+        new BukkitRunnable(){
             int countdown = 5;
 
-            @Override
             public void run() {
-                if (finished) {
-                    cancel();
+                if (DuelMatch.this.finished) {
+                    this.cancel();
                     return;
                 }
-
-                if (countdown > 0) {
-                    broadcastMessage("&eEl duelo inicia en &c" + countdown + " &esegundos...");
-                    playSound(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
-                    countdown--;
+                if (this.countdown > 0) {
+                    DuelMatch.this.broadcastMessage("&eEl duelo inicia en &c" + this.countdown + " &esegundos...");
+                    DuelMatch.this.playSound(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+                    --this.countdown;
                 } else {
-                    cancel();
-                    countingDown = false;
-                    started = true;
-                    startTime = System.currentTimeMillis();
-                    broadcastMessage("&a&l¡EL DUELO HA COMENZADO!");
-                    playSound(Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f);
-                    startMatchTimer();
+                    this.cancel();
+                    DuelMatch.this.countingDown = false;
+                    DuelMatch.this.started = true;
+                    DuelMatch.this.startTime = System.currentTimeMillis();
+                    DuelMatch.this.broadcastMessage("&a&l\u00a1EL DUELO HA COMENZADO!");
+                    DuelMatch.this.playSound(Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f);
+                    DuelMatch.this.startMatchTimer();
                 }
             }
-        }.runTaskTimer(plugin, 0L, 20L);
+        }.runTaskTimer((Plugin)this.plugin, 0L, 20L);
     }
 
-    private void setupTeam(DuelTeam team, org.bukkit.Location spawn) {
+    private void setupTeam(DuelTeam team, Location spawn) {
         for (Player player : team.getOnlinePlayers()) {
-            // Save pre-duel location & inventory
-            preDuelLocations.put(player.getUniqueId(), player.getLocation().clone());
-            plugin.getInventoryBackupManager().saveBackup(player);
-
-            // Clean inventory & potion effects
+            this.preDuelLocations.put(player.getUniqueId(), player.getLocation().clone());
+            this.plugin.getInventoryBackupManager().saveBackup(player);
             player.getInventory().clear();
             player.getInventory().setArmorContents(null);
             player.getInventory().setItemInOffHand(null);
             for (PotionEffect effect : player.getActivePotionEffects()) {
                 player.removePotionEffect(effect.getType());
             }
-
             player.setGameMode(GameMode.SURVIVAL);
+            player.setInvulnerable(false);
+            player.setNoDamageTicks(0);
+            player.setFallDistance(0.0f);
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
             player.setFireTicks(0);
-
-            // Enable 1.8.9 PvP attack speed if configured
-            if (plugin.getPvP18Manager() != null) {
-                plugin.getPvP18Manager().enable18PvP(player);
+            if (this.plugin.getPvP18Manager() != null) {
+                this.plugin.getPvP18Manager().enable18PvP(player);
             }
-
-            // Teleport to arena spawn
             if (spawn != null) {
                 player.teleport(spawn);
             }
-
-            // Apply kit items with PDC anti-dupe tags
-            if (kit != null) {
-                player.getInventory().setStorageContents(plugin.getAntiDupeManager().markKitItems(kit.getContents()));
-                player.getInventory().setArmorContents(plugin.getAntiDupeManager().markKitItems(kit.getArmor()));
-                if (kit.getOffHand() != null) {
-                    player.getInventory().setItemInOffHand(plugin.getAntiDupeManager().markKitItem(kit.getOffHand()));
+            if (this.kit != null) {
+                for (PotionEffect effect : player.getActivePotionEffects()) {
+                    player.removePotionEffect(effect.getType());
                 }
-                for (PotionEffect effect : kit.getPotionEffects()) {
-                    player.addPotionEffect(effect);
+                boolean pkGiven = false;
+                if (this.kit.isFromPlayerKits() && this.plugin.getKitManager().getPlayerKitsHook().isEnabled()) {
+                    pkGiven = this.plugin.getKitManager().getPlayerKitsHook().giveKitToPlayer(player, this.kit.getName());
+                }
+                if (!pkGiven) {
+                    ItemStack[] armor;
+                    ItemStack[] fixed;
+                    ItemStack[] contents = this.kit.getContents();
+                    if (contents.length != 36) {
+                        fixed = new ItemStack[36];
+                        System.arraycopy(contents, 0, fixed, 0, Math.min(contents.length, 36));
+                        contents = fixed;
+                    }
+                    if ((armor = this.kit.getArmor()).length != 4) {
+                        fixed = new ItemStack[4];
+                        System.arraycopy(armor, 0, fixed, 0, Math.min(armor.length, 4));
+                        armor = fixed;
+                    }
+                    player.getInventory().setStorageContents(this.plugin.getAntiDupeManager().markKitItems(contents));
+                    player.getInventory().setArmorContents(this.plugin.getAntiDupeManager().markKitItems(armor));
+                    if (this.kit.getOffHand() != null) {
+                        player.getInventory().setItemInOffHand(this.plugin.getAntiDupeManager().markKitItem(this.kit.getOffHand()));
+                    } else {
+                        player.getInventory().setItemInOffHand(null);
+                    }
+                    for (PotionEffect effect : this.kit.getPotionEffects()) {
+                        player.addPotionEffect(effect);
+                    }
+                } else {
+                    this.plugin.getKitManager().autoEquipArmor(player);
+                    this.plugin.getKitManager().compactHotbar(player);
+                    this.plugin.getAntiDupeManager().markPlayerInventory(player);
                 }
             }
             player.updateInventory();
@@ -140,160 +176,151 @@ public class DuelMatch {
     }
 
     private void startMatchTimer() {
-        timerTask = new BukkitRunnable() {
-            @Override
+        this.timerTask = new BukkitRunnable(){
+
             public void run() {
-                if (finished) {
-                    cancel();
+                if (DuelMatch.this.finished) {
+                    this.cancel();
                     return;
                 }
-
-                if (remainingSeconds <= 0) {
-                    cancel();
-                    broadcastMessage("&c&l¡EL TIEMPO MAXIMO DEL DUELO (10 MINUTOS) HA EXPIRADO!");
-                    handleTimeout();
+                if (DuelMatch.this.remainingSeconds <= 0) {
+                    this.cancel();
+                    DuelMatch.this.broadcastMessage("&c&l\u00a1EL TIEMPO MAXIMO DEL DUELO (10 MINUTOS) HA EXPIRADO!");
+                    DuelMatch.this.handleTimeout();
                     return;
                 }
-
-                // Actionbar timer update
-                int min = remainingSeconds / 60;
-                int sec = remainingSeconds % 60;
+                int min = DuelMatch.this.remainingSeconds / 60;
+                int sec = DuelMatch.this.remainingSeconds % 60;
                 String timeFormatted = String.format("%02d:%02d", min, sec);
-                String actionbar = TextUtil.colorize("&eTiempo restante: &b" + timeFormatted + " &7| Arena: &a" + arena.getName());
-                
-                sendActionBar(actionbar);
-                remainingSeconds--;
+                String actionbar = TextUtil.colorize("&eTiempo restante: &b" + timeFormatted + " &7| Arena: &a" + DuelMatch.this.arena.getName());
+                DuelMatch.this.sendActionBar(actionbar);
+                --DuelMatch.this.remainingSeconds;
             }
-        }.runTaskTimer(plugin, 0L, 20L);
+        }.runTaskTimer((Plugin)this.plugin, 0L, 20L);
     }
 
     public void handlePlayerDeath(Player victim, Player killer) {
-        if (finished) return;
-
-        DuelTeam victimTeam = getTeamOf(victim);
-        if (victimTeam == null) return;
-
+        if (this.finished) {
+            return;
+        }
+        DuelTeam victimTeam = this.getTeamOf(victim);
+        if (victimTeam == null) {
+            return;
+        }
         victimTeam.markDead(victim.getUniqueId());
-
-        // Clean kit items on death
-        plugin.getAntiDupeManager().purgeKitItems(victim);
+        this.plugin.getAntiDupeManager().purgeKitItems(victim);
         victim.getInventory().clear();
         victim.getInventory().setArmorContents(null);
-
-        broadcastMessage("&c" + victim.getName() + " &7ha sido eliminado del duelo.");
-
-        // Check if victim team is eliminated
+        this.broadcastMessage("&c" + victim.getName() + " &7ha sido eliminado del duelo.");
         if (victimTeam.isEliminated()) {
-            DuelTeam winningTeam = (victimTeam == team1) ? team2 : team1;
-            endMatch(winningTeam);
+            DuelTeam winningTeam = victimTeam == this.team1 ? this.team2 : this.team1;
+            this.endMatch(winningTeam);
         } else {
-            // Put victim in spectator mode until match ends
             victim.setGameMode(GameMode.SPECTATOR);
-            if (arena.getSpectatorSpawn() != null) {
-                victim.teleport(arena.getSpectatorSpawn());
+            if (this.arena.getSpectatorSpawn() != null) {
+                victim.teleport(this.arena.getSpectatorSpawn());
             }
         }
     }
 
     public void handlePlayerQuit(Player player) {
-        if (finished) return;
-        DuelTeam team = getTeamOf(player);
+        if (this.finished) {
+            return;
+        }
+        DuelTeam team = this.getTeamOf(player);
         if (team != null) {
-            broadcastMessage("&c" + player.getName() + " &7se ha desconectado durante el duelo.");
+            this.broadcastMessage("&c" + player.getName() + " &7se ha desconectado durante el duelo.");
             team.markDead(player.getUniqueId());
-
             if (team.isEliminated()) {
-                DuelTeam winningTeam = (team == team1) ? team2 : team1;
-                endMatch(winningTeam);
+                DuelTeam winningTeam = team == this.team1 ? this.team2 : this.team1;
+                this.endMatch(winningTeam);
             }
         }
     }
 
     public void handleForfeit(Player player) {
-        if (finished) return;
-        DuelTeam team = getTeamOf(player);
+        if (this.finished) {
+            return;
+        }
+        DuelTeam team = this.getTeamOf(player);
         if (team != null) {
-            broadcastMessage("&c" + player.getName() + " &7se ha rendido.");
+            this.broadcastMessage("&c" + player.getName() + " &7se ha rendido.");
             team.markDead(player.getUniqueId());
-
             if (team.isEliminated()) {
-                DuelTeam winningTeam = (team == team1) ? team2 : team1;
-                endMatch(winningTeam);
+                DuelTeam winningTeam = team == this.team1 ? this.team2 : this.team1;
+                this.endMatch(winningTeam);
             }
         }
     }
 
     private void handleTimeout() {
-        // Decide winner by higher remaining alive players or higher total damage
-        if (team1.getOnlineAlivePlayers().size() > team2.getOnlineAlivePlayers().size()) {
-            endMatch(team1);
-        } else if (team2.getOnlineAlivePlayers().size() > team1.getOnlineAlivePlayers().size()) {
-            endMatch(team2);
-        } else if (team1.getTotalDamage() >= team2.getTotalDamage()) {
-            endMatch(team1);
+        if (this.team1.getOnlineAlivePlayers().size() > this.team2.getOnlineAlivePlayers().size()) {
+            this.endMatch(this.team1);
+        } else if (this.team2.getOnlineAlivePlayers().size() > this.team1.getOnlineAlivePlayers().size()) {
+            this.endMatch(this.team2);
+        } else if (this.team1.getTotalDamage() >= this.team2.getTotalDamage()) {
+            this.endMatch(this.team1);
         } else {
-            endMatch(team2);
+            this.endMatch(this.team2);
         }
     }
 
     public void endMatch(DuelTeam winningTeam) {
-        if (finished) return;
-        finished = true;
-        endTime = System.currentTimeMillis();
+        String hp;
+        int hits;
+        String name;
+        Player p;
+        if (this.finished) {
+            return;
+        }
+        this.finished = true;
+        this.endTime = System.currentTimeMillis();
         this.winner = winningTeam;
-
-        if (timerTask != null) {
-            timerTask.cancel();
+        if (this.timerTask != null) {
+            this.timerTask.cancel();
         }
-
-        broadcastMessage("&a&l=====================================");
-        broadcastMessage("&e&l          DUELO FINALIZADO");
-        broadcastMessage("&7Ganador: &a" + (winningTeam != null ? winningTeam.getFormattedMembers() : "Empate"));
-        broadcastMessage("");
-        broadcastMessage("&f&lEstadísticas de Jugadores:");
-
-        broadcastMessage("&b&l" + team1.getName() + ":");
-        for (UUID uuid : team1.getMembers()) {
-            Player p = Bukkit.getPlayer(uuid);
-            String name = p != null ? p.getName() : "Desconocido";
-            int hits = team1.getHits(uuid);
-            if (team1.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
-                String hp = String.format("%.1f", p.getHealth());
-                broadcastMessage(" &7- &f" + name + ": &a" + hp + " ❤ &7| &e" + hits + " golpes");
-            } else {
-                broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
+        this.broadcastMessage("&a&l=====================================");
+        this.broadcastMessage("&e&l          DUELO FINALIZADO");
+        this.broadcastMessage("&7Ganador: &a" + (winningTeam != null ? winningTeam.getFormattedMembers() : "Empate"));
+        this.broadcastMessage("");
+        this.broadcastMessage("&f&lEstad\u00edsticas de Jugadores:");
+        this.broadcastMessage("&b&l" + this.team1.getName() + ":");
+        for (UUID uuid : this.team1.getMembers()) {
+            p = Bukkit.getPlayer((UUID)uuid);
+            name = p != null ? p.getName() : "Desconocido";
+            hits = this.team1.getHits(uuid);
+            if (this.team1.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
+                hp = String.format("%.1f", p.getHealth());
+                this.broadcastMessage(" &7- &f" + name + ": &a" + hp + " \u2764 &7| &e" + hits + " golpes");
+                continue;
             }
+            this.broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
         }
-
-        broadcastMessage("&c&l" + team2.getName() + ":");
-        for (UUID uuid : team2.getMembers()) {
-            Player p = Bukkit.getPlayer(uuid);
-            String name = p != null ? p.getName() : "Desconocido";
-            int hits = team2.getHits(uuid);
-            if (team2.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
-                String hp = String.format("%.1f", p.getHealth());
-                broadcastMessage(" &7- &f" + name + ": &a" + hp + " ❤ &7| &e" + hits + " golpes");
-            } else {
-                broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
+        this.broadcastMessage("&c&l" + this.team2.getName() + ":");
+        for (UUID uuid : this.team2.getMembers()) {
+            p = Bukkit.getPlayer((UUID)uuid);
+            name = p != null ? p.getName() : "Desconocido";
+            hits = this.team2.getHits(uuid);
+            if (this.team2.getAliveMembers().contains(uuid) && p != null && p.isOnline() && !p.isDead()) {
+                hp = String.format("%.1f", p.getHealth());
+                this.broadcastMessage(" &7- &f" + name + ": &a" + hp + " \u2764 &7| &e" + hits + " golpes");
+                continue;
             }
+            this.broadcastMessage(" &7- &f" + name + ": &cMUERTO &7| &e" + hits + " golpes");
         }
-        broadcastMessage("&a&l=====================================");
+        this.broadcastMessage("&a&l=====================================");
+        new BukkitRunnable(){
 
-        // Teleport back and restore original inventories after 3 seconds
-        new BukkitRunnable() {
-            @Override
             public void run() {
-                cleanupAndRestore();
+                DuelMatch.this.cleanupAndRestore();
             }
-        }.runTaskLater(plugin, 60L);
+        }.runTaskLater((Plugin)this.plugin, 60L);
     }
 
     public void cleanupAndRestore() {
-        List<Player> allPlayers = getAllPlayers();
+        List<Player> allPlayers = this.getAllPlayers();
         for (Player p : allPlayers) {
             if (p == null || !p.isOnline()) continue;
-
-            // Reset player state (GameMode, Health, Potion effects, Fire, Fall distance)
             p.setGameMode(GameMode.SURVIVAL);
             p.setHealth(p.getMaxHealth());
             p.setFoodLevel(20);
@@ -302,120 +329,121 @@ public class DuelMatch {
             for (PotionEffect effect : p.getActivePotionEffects()) {
                 p.removePotionEffect(effect.getType());
             }
-
-            // Restore vanilla 1.9+ attack speed if changed
-            if (plugin.getPvP18Manager() != null) {
-                plugin.getPvP18Manager().restoreVanillaPvP(p);
+            if (this.plugin.getPvP18Manager() != null) {
+                this.plugin.getPvP18Manager().restoreVanillaPvP(p);
             }
-
-            // Purge any remaining kit items
-            plugin.getAntiDupeManager().purgeKitItems(p);
-
-            // Restore original inventory from disk
-            plugin.getInventoryBackupManager().restoreBackup(p);
-
-            // Teleport to pre-duel location, lobby spawn, spectator spawn, or world spawn
-            org.bukkit.Location targetLoc = preDuelLocations.get(p.getUniqueId());
+            this.plugin.getAntiDupeManager().purgeKitItems(p);
+            this.plugin.getInventoryBackupManager().restoreBackup(p);
+            Location targetLoc = this.plugin.getArenaManager().getGlobalLobbySpawn();
             if (targetLoc == null || targetLoc.getWorld() == null) {
-                targetLoc = plugin.getArenaManager().getGlobalLobbySpawn();
+                targetLoc = this.preDuelLocations.get(p.getUniqueId());
             }
             if (targetLoc == null || targetLoc.getWorld() == null) {
-                targetLoc = arena.getSpectatorSpawn();
+                targetLoc = this.plugin.getInventoryBackupManager().getSavedLocation(p);
             }
             if (targetLoc == null || targetLoc.getWorld() == null) {
-                targetLoc = p.getWorld().getSpawnLocation();
+                World mainWorld = Bukkit.getWorlds().isEmpty() ? null : (World)Bukkit.getWorlds().get(0);
+                World world = mainWorld;
+                if (mainWorld != null) {
+                    targetLoc = mainWorld.getSpawnLocation();
+                }
             }
-
             if (targetLoc != null) {
                 p.teleport(targetLoc);
             }
+            this.plugin.getDuelEventManager().deliverPendingRewards(p);
         }
-
-        // Rollback placed blocks in arena
-        arena.getRollback().rollback();
-        arena.setState(ArenaState.AVAILABLE);
-
-        // Remove from DuelManager
-        plugin.getDuelManager().unregisterMatch(this);
+        this.arena.getRollback().rollback();
+        this.arena.setState(ArenaState.AVAILABLE);
+        this.plugin.getDuelManager().unregisterMatch(this);
     }
 
     public DuelTeam getTeamOf(Player player) {
-        if (player == null) return null;
-        if (team1.getMembers().contains(player.getUniqueId())) return team1;
-        if (team2.getMembers().contains(player.getUniqueId())) return team2;
+        if (player == null) {
+            return null;
+        }
+        if (this.team1.getMembers().contains(player.getUniqueId())) {
+            return this.team1;
+        }
+        if (this.team2.getMembers().contains(player.getUniqueId())) {
+            return this.team2;
+        }
         return null;
     }
 
     public List<Player> getAllPlayers() {
-        List<Player> list = new ArrayList<>();
-        list.addAll(team1.getOnlinePlayers());
-        list.addAll(team2.getOnlinePlayers());
+        ArrayList<Player> list = new ArrayList<Player>();
+        list.addAll(this.team1.getOnlinePlayers());
+        list.addAll(this.team2.getOnlinePlayers());
         return list;
     }
 
     public void broadcastMessage(String msg) {
         String colored = TextUtil.colorize(msg);
-        for (Player p : getAllPlayers()) {
+        for (Player p : this.getAllPlayers()) {
             p.sendMessage(colored);
         }
     }
 
     public void sendActionBar(String msg) {
         Component comp = TextUtil.toComponent(msg);
-        for (Player p : getAllPlayers()) {
+        for (Player p : this.getAllPlayers()) {
             p.sendActionBar(comp);
         }
     }
 
     public void playSound(Sound sound, float vol, float pitch) {
-        for (Player p : getAllPlayers()) {
+        for (Player p : this.getAllPlayers()) {
             p.playSound(p.getLocation(), sound, vol, pitch);
         }
     }
 
     public UUID getMatchId() {
-        return matchId;
+        return this.matchId;
     }
 
     public Arena getArena() {
-        return arena;
+        return this.arena;
     }
 
     public Kit getKit() {
-        return kit;
+        return this.kit;
     }
 
     public DuelMode getMode() {
-        return mode;
+        return this.mode;
     }
 
     public DuelTeam getTeam1() {
-        return team1;
+        return this.team1;
     }
 
     public DuelTeam getTeam2() {
-        return team2;
+        return this.team2;
     }
 
     public DuelTeam getWinner() {
-        return winner;
+        return this.winner;
     }
 
     public boolean isCountingDown() {
-        return countingDown;
+        return this.countingDown;
     }
 
     public boolean isStarted() {
-        return started;
+        return this.started;
     }
 
     public boolean isFinished() {
-        return finished;
+        return this.finished;
     }
 
     public long getDurationSeconds() {
-        if (startTime == 0) return 0;
-        long end = endTime > 0 ? endTime : System.currentTimeMillis();
-        return (end - startTime) / 1000;
+        if (this.startTime == 0L) {
+            return 0L;
+        }
+        long end = this.endTime > 0L ? this.endTime : System.currentTimeMillis();
+        return (end - this.startTime) / 1000L;
     }
 }
+

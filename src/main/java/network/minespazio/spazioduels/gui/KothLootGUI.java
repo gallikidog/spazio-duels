@@ -1,5 +1,17 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.bukkit.Bukkit
+ *  org.bukkit.Material
+ *  org.bukkit.entity.Player
+ *  org.bukkit.inventory.Inventory
+ *  org.bukkit.inventory.InventoryHolder
+ *  org.bukkit.inventory.ItemStack
+ */
 package network.minespazio.spazioduels.gui;
 
+import java.util.ArrayList;
 import network.minespazio.spazioduels.SpazioDuelsPlugin;
 import network.minespazio.spazioduels.koth.Koth;
 import network.minespazio.spazioduels.util.ItemBuilder;
@@ -11,11 +23,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class KothLootGUI implements InventoryHolder {
-
+public class KothLootGUI
+implements InventoryHolder {
     public static final String TITLE_PREFIX = TextUtil.colorize("&8Loot KOTH: ");
     private final SpazioDuelsPlugin plugin;
     private final Koth koth;
@@ -27,74 +36,50 @@ public class KothLootGUI implements InventoryHolder {
     }
 
     public void open(Player player) {
-        this.inventory = Bukkit.createInventory(this, 54, TITLE_PREFIX + koth.getName());
-
-        // Load existing loot items into slots 0-44
-        if (koth.getLootItems() != null) {
+        this.inventory = Bukkit.createInventory((InventoryHolder)this, (int)54, (String)(TITLE_PREFIX + this.koth.getName()));
+        if (this.koth.getLootItems() != null) {
             int slot = 0;
-            for (ItemStack item : koth.getLootItems()) {
+            for (ItemStack item : this.koth.getLootItems()) {
                 if (slot >= 45) break;
-                if (item != null && !item.getType().isAir()) {
-                    this.inventory.setItem(slot++, item.clone());
-                }
+                if (item == null || item.getType().isAir()) continue;
+                this.inventory.setItem(slot++, item.clone());
             }
         }
-
-        // Fill bottom control bar (row 6: slots 45-53)
         ItemBuilder glass = new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name(" ");
-        for (int i = 45; i < 54; i++) {
-            if (i != 49) {
-                this.inventory.setItem(i, glass.build());
-            }
+        for (int i = 45; i < 54; ++i) {
+            if (i == 49) continue;
+            this.inventory.setItem(i, glass.build());
         }
-
-        // Slot 49: SAVE LOOT button
-        ItemBuilder saveButton = new ItemBuilder(Material.EMERALD_BLOCK)
-                .name("&a&l[ GUARDAR LOOT ]")
-                .lore(
-                        "&7Haz clic aquí para guardar todos los",
-                        "&7ítems colocados arriba como botín",
-                        "&7del KOTH &b" + koth.getName() + "&7.",
-                        "",
-                        "&e▶ Haz clic para guardar"
-                );
+        ItemBuilder saveButton = new ItemBuilder(Material.EMERALD_BLOCK).name("&a&l[ GUARDAR LOOT ]").lore("&7Haz clic aqu\u00ed para guardar todos los", "&7\u00edtems colocados arriba como bot\u00edn", "&7del KOTH &b" + this.koth.getName() + "&7.", "", "&e\u25b6 Haz clic para guardar");
         this.inventory.setItem(49, saveButton.build());
-
         player.openInventory(this.inventory);
     }
 
     public void handleClick(Player player, int rawSlot) {
-        // If clicking bottom control bar (slots 45-53)
-        if (rawSlot >= 45 && rawSlot < 54) {
-            if (rawSlot == 49) {
-                // Save Loot
-                saveLoot(player);
-            }
+        if (rawSlot >= 45 && rawSlot < 54 && rawSlot == 49) {
+            this.saveLoot(player);
         }
     }
 
     private void saveLoot(Player player) {
-        List<ItemStack> newLoot = new ArrayList<>();
-        for (int i = 0; i < 45; i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item != null && !item.getType().isAir()) {
-                newLoot.add(item.clone());
-            }
+        ArrayList<ItemStack> newLoot = new ArrayList<ItemStack>();
+        for (int i = 0; i < 45; ++i) {
+            ItemStack item = this.inventory.getItem(i);
+            if (item == null || item.getType().isAir()) continue;
+            newLoot.add(item.clone());
         }
-
-        koth.setLootItems(newLoot);
-        plugin.getKothManager().saveKoths();
-
+        this.koth.setLootItems(newLoot);
+        this.plugin.getKothManager().saveKoths();
         player.closeInventory();
-        player.sendMessage(TextUtil.colorize("&a¡Botín del KOTH &b" + koth.getName() + " &aguardado exitosamente! (" + newLoot.size() + " ítems)"));
+        player.sendMessage(TextUtil.colorize("&a\u00a1Bot\u00edn del KOTH &b" + this.koth.getName() + " &aguardado exitosamente! (" + newLoot.size() + " \u00edtems)"));
     }
 
     public Koth getKoth() {
-        return koth;
+        return this.koth;
     }
 
-    @Override
     public Inventory getInventory() {
-        return inventory;
+        return this.inventory;
     }
 }
+

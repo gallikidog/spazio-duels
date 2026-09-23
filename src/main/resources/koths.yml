@@ -1,2 +1,8 @@
 # SpazioDuels KOTHs Configuration File
+# Optional daily schedule per KOTH:
+# koths:
+#   castillo:
+#     activation_times:
+#       - "18:00"
+#       - "22:30"
 koths: {}
